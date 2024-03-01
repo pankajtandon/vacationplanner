@@ -23,7 +23,7 @@ Calling feature.
   VacationServiceTests
   ```
   You should see log output on the console that indicates how the LLM invokes your functions and infers data based on the results 
-- returned by your custom functions.
+  returned by your custom functions.
 #### Explore
 - The functions that you need to provide that _may_ be called by 
   the model can be modelled after <code>WeatherService</code> or <code>AirfareService</code>
