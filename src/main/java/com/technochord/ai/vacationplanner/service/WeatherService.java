@@ -8,7 +8,6 @@ import com.technochord.ai.vacationplanner.config.properties.WeatherProperties;
 import com.technochord.ai.vacationplanner.model.MonthlyWeather;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.http.HttpMethod;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.client.RestTemplate;
 

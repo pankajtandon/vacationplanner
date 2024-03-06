@@ -1,5 +1,6 @@
 package com.technochord.ai.vacationplanner.config;
 
+import com.technochord.ai.vacationplanner.config.properties.CurrencyExchangeProperties;
 import com.technochord.ai.vacationplanner.config.properties.FlightProperties;
 import com.technochord.ai.vacationplanner.config.properties.WeatherProperties;
 import com.technochord.ai.vacationplanner.service.AirfareService;
@@ -26,6 +27,9 @@ public class FunctionCallingConfig {
     @Autowired
     private FlightProperties flightProperties;
 
+    @Autowired
+    private CurrencyExchangeProperties currencyExchangeProperties;
+
     @Bean
     public Function<WeatherService.Request, WeatherService.Response> weatherService() {
         return new WeatherService(restTemplate, weatherProperties);
@@ -38,7 +42,7 @@ public class FunctionCallingConfig {
 
     @Bean
     public Function<CurrencyExchangeService.Request, CurrencyExchangeService.Response> currencyExchangeService() {
-        return new CurrencyExchangeService();
+        return new CurrencyExchangeService(currencyExchangeProperties, restTemplate);
     }
 
     @Bean

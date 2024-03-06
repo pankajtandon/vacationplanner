@@ -4,61 +4,33 @@ import com.fasterxml.jackson.annotation.JsonClassDescription;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonPropertyDescription;
+import com.technochord.ai.vacationplanner.config.properties.CurrencyExchangeProperties;
+import com.technochord.ai.vacationplanner.model.ExchangeRates;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.client.RestTemplate;
 
 import java.util.function.Function;
 
 public class CurrencyExchangeService implements Function<CurrencyExchangeService.Request, CurrencyExchangeService.Response> {
     private final Logger log = LoggerFactory.getLogger(CurrencyExchangeService.class);
+    private CurrencyExchangeProperties currencyExchangeProperties;
 
-    private static double USD_POUND = 0.9;
+    private RestTemplate restTemplate;
 
-    private static double POUND_USD = 1.1;
-
-    private static double POUND_EUR = 1.03;
-
-    private static double EUR_POUND = 0.97;
-
-    private static double USD_EUR = 0.96;
-
-    private static double EUR_USD = 1.01;
+    public CurrencyExchangeService(final CurrencyExchangeProperties currencyExchangeProperties,
+                                   final RestTemplate restTemplate) {
+        this.currencyExchangeProperties = currencyExchangeProperties;
+        this.restTemplate = restTemplate;
+    }
 
     @Override
     public Response apply(Request request) {
         log.info("Called CurrencyExchangeService with " + request);
-        Response response = null;
-        double out = 0.0;
-        AirfareService.Currency currency = null;
 
-        if (request.currencyIn == AirfareService.Currency.POUND) {
-            if (request.currencyOut == AirfareService.Currency.USD) {
-                out = request.amount * POUND_USD;
-                currency = AirfareService.Currency.USD;
-            } else if (request.currencyOut == AirfareService.Currency.EUR) {
-                out = request.amount * POUND_EUR;
-                currency = AirfareService.Currency.EUR;
-            }
-        } else if (request.currencyIn == AirfareService.Currency.USD) {
-            if (request.currencyOut == AirfareService.Currency.POUND) {
-                out = request.amount * USD_POUND;
-                currency = AirfareService.Currency.POUND;
-            } else if (request.currencyOut == AirfareService.Currency.EUR) {
-                out = request.amount * USD_EUR;
-                currency = AirfareService.Currency.EUR;
-            }
-        } else if (request.currencyIn == AirfareService.Currency.EUR) {
-            if (request.currencyOut == AirfareService.Currency.POUND) {
-                out = request.amount * EUR_POUND;
-                currency = AirfareService.Currency.POUND;
-            } else if (request.currencyOut == AirfareService.Currency.USD) {
-                out = request.amount * EUR_USD;
-                currency = AirfareService.Currency.USD;
-            }
-        } else {
-            throw new UnsupportedOperationException("Invalid currency specified in request: " + request);
-        }
-        return new Response(out, currency);
+        double out = this.getExchange(request.currencyIn.name(), request.currencyOut.name(), request.amount);
+        return new Response(out, request.currencyOut);
     }
 
     @JsonInclude(JsonInclude.Include.NON_NULL)
@@ -78,5 +50,18 @@ public class CurrencyExchangeService implements Function<CurrencyExchangeService
 
     public record Response(double amount, AirfareService.Currency currencyOut)
     {
+    }
+
+    public double getExchange(final String currencyIn, final String currencyOut, final double amount) {
+        AirfareService.Currency currencyEnumIn = AirfareService.Currency.valueOf(currencyIn);
+        AirfareService.Currency currencyEnumOut = AirfareService.Currency.valueOf(currencyOut);
+        String url = currencyExchangeProperties.getVatComply().getUrl()
+                + "?base=" + currencyEnumIn.name();
+
+        ResponseEntity<ExchangeRates> resp = restTemplate.getForEntity(url, ExchangeRates.class);
+        ExchangeRates exchangeRates = resp.getBody();
+        Double rate = exchangeRates.getRateMap().get(currencyEnumOut.name());
+
+        return rate * amount;
     }
 }

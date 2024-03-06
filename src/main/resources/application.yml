@@ -21,4 +21,6 @@ flight:
     client-id: <passed from CLI>
     client-secret: <passed from CLI>
 
-
+currency-exchange:
+  vat-comply:
+    url: https://api.vatcomply.com/rates

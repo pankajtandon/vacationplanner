@@ -15,8 +15,8 @@ public class VacationService {
     @Autowired
     private OpenAiChatClient openAiChatClient;
     public String planVacation() {
-        UserMessage userMessage = new UserMessage("I live in Pittsburgh, PA and I love to Golf. " +
-                "In the summer of 2024, where should I fly to in Europe or the United States, to play, where the weather " +
+        UserMessage userMessage = new UserMessage("I live in Pittsburgh, PA and I love golf. " +
+                "In the summer of 2024, where should I fly to, in Europe or the United States, to play, where the weather " +
                 "is pleasant and it's economical too?");
 
         ChatResponse response = openAiChatClient.call(new Prompt(List.of(userMessage),

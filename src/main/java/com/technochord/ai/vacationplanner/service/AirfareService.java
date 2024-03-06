@@ -5,8 +5,9 @@ import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonPropertyDescription;
 import com.technochord.ai.vacationplanner.config.properties.FlightProperties;
-import com.technochord.ai.vacationplanner.model.*;
-import org.apache.commons.lang3.StringUtils;
+import com.technochord.ai.vacationplanner.model.Airports;
+import com.technochord.ai.vacationplanner.model.FlightOffers;
+import com.technochord.ai.vacationplanner.model.TokenResponse;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.*;
@@ -50,16 +51,12 @@ public class AirfareService implements Function<AirfareService.Request, AirfareS
     }
 
     public enum Currency {
-        /**
-         * Dollars.
-         */
         USD("US Dollar"),
-        /**
-         * Pounds.
-         */
-        POUND("British Pound"),
-
-        EUR("Euro");
+        GBP("Great Britain Pound"),
+        EUR("Euro"),
+        INR("Indian Rupee"),
+        JPY("Japanese Yen"),
+        CAD("Canadian Dollar");
 
         /**
          * Human readable currency name.
