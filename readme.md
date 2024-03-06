@@ -16,8 +16,11 @@ Calling feature.
 
 - Supply an API Key for OpenAI via
    ```
-  -Dspring.ai.openai.apiKey=<your key here>
-   ```
+    -Dspring.ai.openai.apiKey=<Your Key here>
+    -Dweather.visualcrossing.apiKey=<Your Key here>
+    -Dflight.amadeus.client-id=<Your Key here>
+    -Dflight.amadeus.client-secret=<Your Key here>
+    ```
 - Run the test
   ```agsl
   VacationServiceTests
@@ -31,7 +34,7 @@ Below is sample output that has been produced by the run of the <code>VacationSe
 The question asked is:
 
 ```agsl
-I live in Pittsburgh, PA and I love to golf.
+I live in Pittsburgh, PA and I love golf.
 In the summer of 2024, where should I fly to in Europe or the United States, to play, where the weather
 is pleasant and it's economical too?
 ```
