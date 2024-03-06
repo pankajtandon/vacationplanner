@@ -2,7 +2,23 @@
 spring:
   ai:
     openai:
-      apiKey: Passed on CLI
+      apiKey: <passed from CLI>
       chat:
         options:
-          model: gpt-4-turbo-preview
+          model: gpt-4-0125-preview
+
+weather:
+  visualcrossing:
+    url: https://weather.visualcrossing.com/VisualCrossingWebServices/rest/services/timeline
+    apiKey: <passed from CLI>
+
+flight:
+  amadeus:
+    url-root: https://test.api.amadeus.com
+    url-reference-airports: ${flight.amadeus.url-root}/v1/reference-data/locations/airports
+    url-shopping: ${flight.amadeus.url-root}/v2/shopping/flight-offers
+    url-security: ${flight.amadeus.url-root}/v1/security/oauth2/token
+    client-id: <passed from CLI>
+    client-secret: <passed from CLI>
+
+

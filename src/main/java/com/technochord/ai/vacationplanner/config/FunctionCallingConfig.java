@@ -1,24 +1,39 @@
 package com.technochord.ai.vacationplanner.config;
 
+import com.technochord.ai.vacationplanner.config.properties.FlightProperties;
+import com.technochord.ai.vacationplanner.config.properties.WeatherProperties;
 import com.technochord.ai.vacationplanner.service.AirfareService;
 import com.technochord.ai.vacationplanner.service.CurrencyExchangeService;
 import com.technochord.ai.vacationplanner.service.VacationService;
 import com.technochord.ai.vacationplanner.service.WeatherService;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.web.client.RestTemplate;
 
+import java.text.FieldPosition;
 import java.util.function.Function;
 
 @Configuration
 public class FunctionCallingConfig {
+
+    @Autowired
+    private RestTemplate restTemplate;
+
+    @Autowired
+    private WeatherProperties weatherProperties;
+
+    @Autowired
+    private FlightProperties flightProperties;
+
     @Bean
     public Function<WeatherService.Request, WeatherService.Response> weatherService() {
-        return new WeatherService();
+        return new WeatherService(restTemplate, weatherProperties);
     }
 
     @Bean
     public Function<AirfareService.Request, AirfareService.Response> airfareService() {
-        return new AirfareService();
+        return new AirfareService(flightProperties, restTemplate);
     }
 
     @Bean
