@@ -1,5 +1,7 @@
 
 spring:
+  main:
+    web-application-type: NONE
   ai:
     openai:
       apiKey: <passed from CLI>

@@ -15,7 +15,7 @@
 	<description>Demo project for Spring AI - Function Calling feature (OpenAI)</description>
 	<properties>
 		<java.version>17</java.version>
-		<lombok.version>1.18.2</lombok.version>
+		<lombok.version>1.18.26</lombok.version>
 	</properties>
 	<repositories>
 		<repository>
@@ -50,10 +50,10 @@
 	</repositories>
 
 	<dependencies>
-		<dependency>
-			<groupId>org.springframework.boot</groupId>
-			<artifactId>spring-boot-starter-web</artifactId>
-		</dependency>
+<!--		<dependency>-->
+<!--			<groupId>org.springframework.boot</groupId>-->
+<!--			<artifactId>spring-boot-starter-web</artifactId>-->
+<!--		</dependency>-->
 		<dependency>
 			<groupId>org.apache.commons</groupId>
 			<artifactId>commons-lang3</artifactId>

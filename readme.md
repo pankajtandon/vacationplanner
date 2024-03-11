@@ -28,8 +28,20 @@ Calling feature.
   You should see log output on the console that indicates how the LLM invokes your functions and infers data based on the results 
   returned by your custom functions.
 
+
+#### Running on the command line
+
+After you have built the project, execute:
+
+```
+java -jar target/vacationplanner-0.0.1-SNAPSHOT.jar "I live in Pittsburgh, PA and I love golf. In the summer of 2024, where should I fly to, in Europe or the United States, to play, where the weather is pleasant and it's economical too?" --spring.ai.openai.apiKey=[Your key here] --weather.visualcrossing.apiKey=[Your key here] --flight.amadeus.client-id=[Your key here] --flight.amadeus.client-secret=[Your key here]
+```
+
+As you can see, the question has been pased on the command line in quotes and the ApiKeys have also been passed as parameters using the `--` syntax.
+
+
 #### Sample output
-Below is sample output that has been produced by the run of the <code>VacationServiceTests</code>:
+Below is sample output that has been produced by the run of the above:
 
 The question asked is:
 
