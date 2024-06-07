@@ -4,11 +4,15 @@ spring:
     web-application-type: NONE
   ai:
     openai:
-      apiKey: <passed from CLI>
+      api-key: <passed from CLI>
       chat:
         options:
           model: gpt-4-0125-preview
-
+    mistralai:
+      api-key: <passed from CLI>
+      chat:
+        options:
+          model: open-mixtral-8x22b
 weather:
   visualcrossing:
     url: https://weather.visualcrossing.com/VisualCrossingWebServices/rest/services/timeline

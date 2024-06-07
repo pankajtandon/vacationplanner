@@ -7,16 +7,19 @@ import com.technochord.ai.vacationplanner.service.AirfareService;
 import com.technochord.ai.vacationplanner.service.CurrencyExchangeService;
 import com.technochord.ai.vacationplanner.service.VacationService;
 import com.technochord.ai.vacationplanner.service.WeatherService;
+import org.springframework.ai.chat.model.ChatModel;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.web.client.RestTemplate;
 
-import java.text.FieldPosition;
 import java.util.function.Function;
 
 @Configuration
 public class FunctionCallingConfig {
+
+    @Autowired
+    private ChatModel chatModel;
 
     @Autowired
     private RestTemplate restTemplate;
@@ -46,7 +49,7 @@ public class FunctionCallingConfig {
     }
 
     @Bean
-    public VacationService openAIService() {
-        return new VacationService();
+    public VacationService vacationService(final ChatModel model) {
+        return new VacationService(model);
     }
 }

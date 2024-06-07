@@ -14,16 +14,26 @@ Calling feature.
 
 #### To run the test that demonstrates how function calling works
 
+Create the following environment variables in your .zshrc/bashrc:
+
+```
+export OPENAI_API_KEY=[api key (Create at https://platform.openai.com/api-keys)]
+export MISTRALAI_API_KEY=[api key (Create at https://console.mistral.ai/api-keys/)]
+export VIRTUALCROSSING_API_KEY=[api key (Create at https://www.visualcrossing.com/account)]
+export AMADEUS_CLIENT_ID=[api client Id (Create at https://www.accounts.amadeus.com/)]
+export AMADEUS_CLIENT_SECRET=[api client secret (Create at https://www.accounts.amadeus.com/)]
+```
 - Supply an API Key for OpenAI via
    ```
-    -Dspring.ai.openai.apiKey=<Your Key here>
-    -Dweather.visualcrossing.apiKey=<Your Key here>
-    -Dflight.amadeus.client-id=<Your Key here>
-    -Dflight.amadeus.client-secret=<Your Key here>
+    -Dspring.ai.openai.apiKey=${OPENAI_API_KEY}
+    -Dspring.ai.mistralai.apiKey=${MISTRALAI_API_KEY}
+    -Dweather.visualcrossing.apiKey=${VISUALCROSSING_API_KEY}
+    -Dflight.amadeus.client-id=${AMADEUS_CLIENT_ID}
+    -Dflight.amadeus.client-secret=${AMADEUS_CLIENT_SECRET}
     ```
 - Run the test
   ```agsl
-  VacationServiceTests
+  mvn clean test
   ```
   You should see log output on the console that indicates how the LLM invokes your functions and infers data based on the results 
   returned by your custom functions.
@@ -33,15 +43,23 @@ Calling feature.
 
 After you have built the project, execute:
 
+To execute using openai:
 ```
-java -jar target/vacationplanner-0.0.1-SNAPSHOT.jar "I live in Pittsburgh, PA and I love golf. In the summer of 2024, where should I fly to, in Europe or the United States, to play, where the weather is pleasant and it's economical too?" --spring.ai.openai.apiKey=[Your key here] --weather.visualcrossing.apiKey=[Your key here] --flight.amadeus.client-id=[Your key here] --flight.amadeus.client-secret=[Your key here]
+java -jar target/vacationplanner-0.0.1-SNAPSHOT.jar "I live in Pittsburgh, PA and I love golf. In the summer of 2024, where should I fly to, in Europe or the United States, to play, where the weather is pleasant and it's economical too?" --spring.ai.openai.apiKey=${OPENAI_API_KEY} --spring.ai.mistralai.apiKey=${MISTRALAI_API_KEY} --weather.visualcrossing.apiKey=${VISUALCROSSING_API_KEY} --flight.amadeus.client-id=${AMADEUS_CLIENT_ID} --flight.amadeus.client-secret=${AMADEUS_CLIENT_SECRET} --spring.profiles.active=openai
 ```
 
-As you can see, the question has been pased on the command line in quotes and the ApiKeys have also been passed as parameters using the `--` syntax.
+To execute using mistralai
+```
+java -jar target/vacationplanner-0.0.1-SNAPSHOT.jar "I live in Pittsburgh, PA and I love golf. In the summer of 2024, where should I fly to, in Europe or the United States, to play, where the weather is pleasant and it's economical too?" --spring.ai.openai.apiKey=${OPENAI_API_KEY} --spring.ai.mistralai.apiKey=${MISTRALAI_API_KEY} --weather.visualcrossing.apiKey=${VISUALCROSSING_API_KEY} --flight.amadeus.client-id=${AMADEUS_CLIENT_ID} --flight.amadeus.client-secret=${AMADEUS_CLIENT_SECRET} --spring.profiles.active=mistralai
+```
+
+
+As you can see, the question has been pased on the command line in quotes and the ApiKeys have also been passed as parameters using the `--` syntax. 
+The only difference is the spring profile that indicates the model to use. 
 
 
 #### Sample output
-Below is sample output that has been produced by the run of the above:
+Below is sample output that has been produced by the run of the above using OpenAI:
 
 The question asked is:
 
