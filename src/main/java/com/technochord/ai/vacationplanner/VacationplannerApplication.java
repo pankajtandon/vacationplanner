@@ -19,10 +19,7 @@ public class VacationplannerApplication implements CommandLineRunner {
 
 	@Override
 	public void run(String... args) throws Exception {
-		log.info("Arg0: " + args[0]);
-
 		String response = vacationService.planVacation(args[0]);
-
 		log.info("Response: {}",  response);
 	}
 }
