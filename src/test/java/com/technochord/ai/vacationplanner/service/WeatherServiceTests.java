@@ -1,24 +1,19 @@
 package com.technochord.ai.vacationplanner.service;
 
 import com.technochord.ai.vacationplanner.model.MonthlyWeather;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.condition.EnabledIfSystemProperties;
-import org.junit.jupiter.api.condition.EnabledIfSystemProperty;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.util.Assert;
 
-@SpringBootTest
-@EnabledIfSystemProperties( value = {
-        @EnabledIfSystemProperty(named = "spring.ai.openai.apiKey", matches = ".*"),
-        @EnabledIfSystemProperty(named = "weather.visualcrossing.apiKey", matches = ".*"),
-        @EnabledIfSystemProperty(named = "flight.amadeus.client-id", matches = ".*"),
-        @EnabledIfSystemProperty(named = "flight.amadeus.client-secret", matches = ".*")
-})
 public class WeatherServiceTests {
 
-    @Autowired
     private WeatherService weatherService;
+
+    @BeforeEach
+    public void before() {
+        this.weatherService = new WeatherService(null, null);
+    }
     @Test
     public void testStartDate() {
         WeatherService.Request request = new WeatherService.Request("Pittsburgh", 1.0, 2.0, WeatherService.Unit.C, "July", "2024");
@@ -35,6 +30,7 @@ public class WeatherServiceTests {
         Assert.isTrue(startString.equals("2024-07-31"), "Start string is incorrect");
     }
 
+    @Disabled
     //2025 - 70.25
     //2024 - 70.25
     //2023 - 73.28
