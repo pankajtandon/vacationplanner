@@ -13,6 +13,9 @@ spring:
       chat:
         options:
           model: open-mixtral-8x22b
+logging:
+  config: classpath:log4j2.xml
+
 weather:
   visualcrossing:
     url: https://weather.visualcrossing.com/VisualCrossingWebServices/rest/services/timeline

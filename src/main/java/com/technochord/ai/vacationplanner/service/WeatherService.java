@@ -77,6 +77,7 @@ public class WeatherService implements Function<WeatherService.Request, WeatherS
         log.info("Called WeatherService with request: " + request);
         MonthlyWeather monthlyWeather = this.getAverageWeather(request);
         Response response = new Response(monthlyWeather.getAverageTempForMonth(), monthlyWeather.getAverageMinTempForMonth(), monthlyWeather.getAverageMaxTempForMonth(), Unit.F);
+        log.info("WeaterService returned: " + response);
         return response;
     }
 

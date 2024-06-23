@@ -3,10 +3,7 @@ package com.technochord.ai.vacationplanner.config;
 import com.technochord.ai.vacationplanner.config.properties.CurrencyExchangeProperties;
 import com.technochord.ai.vacationplanner.config.properties.FlightProperties;
 import com.technochord.ai.vacationplanner.config.properties.WeatherProperties;
-import com.technochord.ai.vacationplanner.service.AirfareService;
-import com.technochord.ai.vacationplanner.service.CurrencyExchangeService;
-import com.technochord.ai.vacationplanner.service.VacationService;
-import com.technochord.ai.vacationplanner.service.WeatherService;
+import com.technochord.ai.vacationplanner.service.*;
 import org.springframework.ai.chat.model.ChatModel;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
@@ -46,6 +43,11 @@ public class FunctionCallingConfig {
     @Bean
     public Function<CurrencyExchangeService.Request, CurrencyExchangeService.Response> currencyExchangeService() {
         return new CurrencyExchangeService(currencyExchangeProperties, restTemplate);
+    }
+
+    @Bean
+    public Function<FinancialService.Request, FinancialService.Response> financialService() {
+        return new FinancialService();
     }
 
     @Bean

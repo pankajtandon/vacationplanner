@@ -30,7 +30,9 @@ public class CurrencyExchangeService implements Function<CurrencyExchangeService
         log.info("Called CurrencyExchangeService with " + request);
 
         double out = this.getExchange(request.currencyIn.name(), request.currencyOut.name(), request.amount);
-        return new Response(out, request.currencyOut);
+        Response response = new Response(out, request.currencyOut);
+        log.info("CurrencyExchangeService response: " + response);
+        return response;
     }
 
     @JsonInclude(JsonInclude.Include.NON_NULL)

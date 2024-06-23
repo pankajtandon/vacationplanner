@@ -46,7 +46,7 @@ public class AirfareService implements Function<AirfareService.Request, AirfareS
                 closestDestinationAirport.getIataCode());
         Response response =  new Response(lowestFlightOffer.getPrice().getTotal(),
                 Currency.valueOf(lowestFlightOffer.getPrice().getCurrency()));
-
+        log.info("AirfareService response: " + response);
         return response;
     }
 
@@ -69,7 +69,7 @@ public class AirfareService implements Function<AirfareService.Request, AirfareS
     }
 
     @JsonInclude(JsonInclude.Include.NON_NULL)
-    @JsonClassDescription("Airfare starting from Pittsburgh, PA to the given destination")
+    @JsonClassDescription("Service that computes airfare starting from the origin to the given destination")
     public record Request(
         @JsonProperty(required = true,
                 value = "origin") @JsonPropertyDescription("The city and state e.g. Pittsburgh, PA where we are flying from") String origin,
@@ -78,9 +78,9 @@ public class AirfareService implements Function<AirfareService.Request, AirfareS
         @JsonProperty(required = true,
             value = "currency") @JsonPropertyDescription("The currency based on the country where the origin is located.") Currency currency,
         @JsonProperty(required = true,
-            value = "originLatitude") @JsonPropertyDescription("The latitude of the destination.") double originLatitude,
+            value = "originLatitude") @JsonPropertyDescription("The latitude of the origin.") double originLatitude,
         @JsonProperty(required = true,
-                value = "originLongitude") @JsonPropertyDescription("The longitude of the destination.") double originLongitude,
+                value = "originLongitude") @JsonPropertyDescription("The longitude of the origin.") double originLongitude,
         @JsonProperty(required = true,
                 value = "destinationLatitude") @JsonPropertyDescription("The latitude of the destination.") double destinationLatitude,
         @JsonProperty(required = true,

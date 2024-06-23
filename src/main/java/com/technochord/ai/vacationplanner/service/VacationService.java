@@ -21,7 +21,6 @@ public class VacationService {
 
         ChatResponse response = chatModel.call(new Prompt(List.of(userMessage)));
 
-        //log.info("Response: {}", response);
-        return response.toString();
+        return response.getResult().getOutput().getContent();
     }
 }

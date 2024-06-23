@@ -19,7 +19,8 @@ public class VacationplannerApplication implements CommandLineRunner {
 
 	@Override
 	public void run(String... args) throws Exception {
+		log.info("Starting interactions with the LLM...");
 		String response = vacationService.planVacation(args[0]);
-		log.info("Response: {}",  response);
+		log.info("Final Response: {}",  response);
 	}
 }

@@ -40,6 +40,7 @@ public class MistralAiConfig {
                 .withFunction("currencyExchangeService")
                 .withFunction("airfareService")
                 .withFunction("weatherService")
+                .withFunction("financialService")
                 .build(),
                 functionCallbackContext,
                 RetryUtils.DEFAULT_RETRY_TEMPLATE);
