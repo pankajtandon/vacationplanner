@@ -4,6 +4,7 @@ import com.fasterxml.jackson.annotation.JsonClassDescription;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonPropertyDescription;
+import com.technochord.ai.vacationplanner.config.RagCandidate;
 import com.technochord.ai.vacationplanner.config.properties.CurrencyExchangeProperties;
 import com.technochord.ai.vacationplanner.model.ExchangeRates;
 import org.slf4j.Logger;
@@ -13,6 +14,7 @@ import org.springframework.web.client.RestTemplate;
 
 import java.util.function.Function;
 
+@RagCandidate
 public class CurrencyExchangeService implements Function<CurrencyExchangeService.Request, CurrencyExchangeService.Response> {
     private final Logger log = LoggerFactory.getLogger(CurrencyExchangeService.class);
     private CurrencyExchangeProperties currencyExchangeProperties;

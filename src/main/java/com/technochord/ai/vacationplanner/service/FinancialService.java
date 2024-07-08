@@ -4,14 +4,14 @@ import com.fasterxml.jackson.annotation.JsonClassDescription;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonPropertyDescription;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import com.technochord.ai.vacationplanner.config.RagCandidate;
+import lombok.extern.log4j.Log4j2;
 
 import java.util.function.Function;
 
+@RagCandidate
+@Log4j2
 public class FinancialService implements Function<FinancialService.Request, FinancialService.Response>  {
-
-    private final Logger log = LoggerFactory.getLogger(FinancialService.class);
 
     @JsonInclude(JsonInclude.Include.NON_NULL)
     @JsonClassDescription("Service that returns my bank balance in USD, to determine which vacations I can afford.")
