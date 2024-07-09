@@ -33,7 +33,7 @@ public class RagService {
         this.ragProperties = ragProperties;
     }
 
-    public Set<String> getRagCandidateFunctionNameSet(final String query) {
+    public Set<String> getRagCandidateFunctionNameSet(final String query, final Integer userSuppliedTopK) {
         Set<String> ragBeans =  ragCandidateSpringContext.getRagCandidateServiceBeanNames();
         Map<String, String> functionMap = new Hashtable();
         if (ragBeans != null) {
@@ -43,7 +43,8 @@ public class RagService {
             }
         }
 
-        Set<String> ragCandidateFunctionNameSet = getTopKFunctionNames(functionMap, Math.min(functionMap.size(), ragProperties.getTopK()), query);
+        Set<String> ragCandidateFunctionNameSet = getTopKFunctionNames(functionMap, Math.min(functionMap.size(),
+                (userSuppliedTopK == null ?  ragProperties.getTopK() : userSuppliedTopK)), query);
 
         return ragCandidateFunctionNameSet;
     }
@@ -53,7 +54,6 @@ public class RagService {
 
         AtomicInteger vectorizeCount = new AtomicInteger();
         //Add function metadata to vectorStore if not exist
-        List<Document> docList = new ArrayList<>();
         if (functionMap != null) {
             functionMap.keySet().stream().forEach(k -> {
                 List<Document> retrievedDocList = vectorStore.similaritySearch(SearchRequest.defaults()
@@ -66,12 +66,13 @@ public class RagService {
                     //Insert into vectorStore
                     Document doc = new Document(functionMap.get(k), Map.of("name", k));
                     vectorStore.add(List.of(doc));
-                    docList.add(doc);
                     vectorizeCount.getAndIncrement();
                 }
             });
 
-            log.info("There were {} ragCandidate beans defined in the context out of which {} were vectorized and inserted into the vectorStore",
+            log.info("There were {} ragCandidate beans defined in the context out of which {} were " +
+                            "vectorized and inserted into the vectorStore " +
+                            (vectorizeCount.get() < functionMap.size() ? "(possibly because they already existed in vector store)" : ""),
                     functionMap.size(), vectorizeCount.get());
         }
 
@@ -91,6 +92,7 @@ public class RagService {
             List<String> nameList = retrievedTopK.stream().map(d -> (String) d.getMetadata().get("name")).collect(Collectors.toList());
 
             log.info("There were {} functions found that were relevant to the passed in query, with a distance range from {} to {}", nameList.size(), min, max);
+            log.debug("Functions metadata being sent to LLM in descending order of relevance: " + nameList.toString());
             return new HashSet<>(nameList);
         }
     }

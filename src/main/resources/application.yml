@@ -1,7 +1,7 @@
-
+server:
+  servlet:
+    context-path: /planner
 spring:
-  main:
-    web-application-type: NONE
   ai:
     openai:
       api-key: <passed from CLI>
@@ -10,13 +10,7 @@ spring:
           model: gpt-4-0125-preview
       embedding:
         enabled: true
-    mistralai:
-      api-key: <passed from CLI>
-      chat:
-        options:
-          model: open-mixtral-8x22b
-      embedding:
-        enabled: false
+
   elasticsearch:
     uris: http://localhost:9200
 #    username: elastic

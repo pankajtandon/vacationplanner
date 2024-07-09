@@ -14,7 +14,7 @@ import java.util.function.Function;
 public class FinancialService implements Function<FinancialService.Request, FinancialService.Response>  {
 
     @JsonInclude(JsonInclude.Include.NON_NULL)
-    @JsonClassDescription("Service that returns my bank balance in USD, to determine which vacations I can afford.")
+    @JsonClassDescription("Service that returns my bank balance and monthly income in USD, to determine what kind of lifestyle can I afford.")
     public record Request(
             @JsonProperty(required = false,
                     value = "accountNumber") @JsonPropertyDescription("The account number to check the balance in") String accountNumber
@@ -22,7 +22,7 @@ public class FinancialService implements Function<FinancialService.Request, Fina
     {
     }
 
-    public record Response(double bankBalance)
+    public record Response(double bankBalance, double monthlyIncome)
     {
     }
 
@@ -31,7 +31,7 @@ public class FinancialService implements Function<FinancialService.Request, Fina
         log.info("Called FinancialService with " + request);
         //In a real situation, hit your bank API here or a local db.
 
-        Response cannedResponseForNow = new Response(1500.00);
+        Response cannedResponseForNow = new Response(4500.00, 1000.00);
         log.info("FinancialService response: " + cannedResponseForNow);
         return cannedResponseForNow;
     }

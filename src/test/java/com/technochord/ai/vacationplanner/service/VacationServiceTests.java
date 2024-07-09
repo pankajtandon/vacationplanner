@@ -25,7 +25,7 @@ public class VacationServiceTests {
         String message = "I live in Pittsburgh, PA and I love golf. " +
                 "In the summer of 2024, where should I fly to, in Europe or the United States, to play, where the weather " +
                 "is pleasant and it's economical too?";
-        String response = vacationService.planVacation(message);
+        String response = vacationService.planVacation(message, 5);
 
         Assert.notNull(response, "Response should not be null!");
     }

@@ -27,15 +27,15 @@ public class VacationService {
         this.ragService = ragService;
     }
 
-    public String planVacation(final String message) {
+    public String planVacation(final String message, final int userSuppliedTopK) {
         UserMessage userMessage = new UserMessage(message);
-        Set<String> ragBeans = ragService.getRagCandidateFunctionNameSet(userMessage.getContent());
+        Set<String> ragBeans = ragService.getRagCandidateFunctionNameSet(userMessage.getContent(), userSuppliedTopK);
 
         Prompt prompt = new Prompt(List.of(userMessage), OpenAiChatOptions.builder()
                 .withFunctions(ragBeans).build());
 
         ChatResponse response = chatModel.call(prompt);
-
+        log.info("Returned a recommendation!");
         return response.getResult().getOutput().getContent();
     }
 }
