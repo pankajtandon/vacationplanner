@@ -61,7 +61,7 @@ java -jar target/vacationplanner-0.0.1-SNAPSHOT.jar --spring.ai.openai.apiKey=${
 In this case, install `mvn` and the project source and then from the project root, execute:
 
 ```
-mvn spring-boot:run -Dspring.ai.openai.apiKey=${OPENAI_API_KEY} -Dweather.visualcrossing.apiKey=${VISUALCROSSING_API_KEY} -Dflight.amadeus.client-id=${AMADEUS_CLIENT_ID} -Dflight.amadeus.client-secret=${AMADEUS_CLIENT_SECRET}
+mvn spring-boot:run -Dspring-boot.run.jvmArguments='-Dspring.ai.openai.apiKey=${OPENAI_API_KEY} -Dweather.visualcrossing.apiKey=${VISUALCROSSING_API_KEY} -Dflight.amadeus.client-id=${AMADEUS_CLIENT_ID} -Dflight.amadeus.client-secret=${AMADEUS_CLIENT_SECRET}'
 ```
 This automatically starts the docker containers before starting the application and also stops it when 
 bringing the app down.
