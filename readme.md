@@ -7,6 +7,18 @@ Calling feature along with Retrieval Augumented Generation (RAG) so that we can 
 with pre-trained models in a secure manner, we can also minimize the 
 tokens of function metadata sent to the LLMs.
 
+These are sample questions that this app can answer, by combining Function Calling and RAG:
+```
+Q1. I live in Pittsburgh, PA and I love golf.
+In the fall of 2024, where should I fly to, in Europe or the United States, to play, 
+where the weather is pleasant and it's economical too?
+
+Q2. I need to remain healthy by following a vegetarian diet and also remain under
+budget. What dishes can you recommend so that I follow the 
+90 30 50 diet rule and such that it is also affordable over a year?
+
+```
+
 #### To build
 
 ```
@@ -24,16 +36,19 @@ export VIRTUALCROSSING_API_KEY=[api key (Create at https://www.visualcrossing.co
 export AMADEUS_CLIENT_ID=[api client Id (Create at https://www.accounts.amadeus.com/)]
 export AMADEUS_CLIENT_SECRET=[api client secret (Create at https://www.accounts.amadeus.com/)]
 ```
+
 - Supply an API Key for OpenAI (LLM and embedding), VisualCrossing (Weather API), Amadeus (FlightService) via
-   ```
-    -Dspring.ai.openai.apiKey=${OPENAI_API_KEY}
-    -Dweather.visualcrossing.apiKey=${VISUALCROSSING_API_KEY}
-    -Dflight.amadeus.client-id=${AMADEUS_CLIENT_ID}
-    -Dflight.amadeus.client-secret=${AMADEUS_CLIENT_SECRET}
-    ```
-- Run the test
+
+ ```
+  -Dspring.ai.openai.apiKey=${OPENAI_API_KEY}
+  -Dweather.visualcrossing.apiKey=${VISUALCROSSING_API_KEY}
+  -Dflight.amadeus.client-id=${AMADEUS_CLIENT_ID}
+  -Dflight.amadeus.client-secret=${AMADEUS_CLIENT_SECRET}
   ```
-  mvn clean test
+- Run the test
+
+  ```
+    ./mvnw clean test
   ```
   You should see log output on the console that indicates how the LLM invokes your functions and infers data based on the results 
   returned by your custom functions.
@@ -61,7 +76,7 @@ java -jar target/vacationplanner-0.0.1-SNAPSHOT.jar --spring.ai.openai.apiKey=${
 In this case, install `mvn` and the project source and then from the project root, execute:
 
 ```
-mvn spring-boot:run -Dspring-boot.run.jvmArguments='-Dspring.ai.openai.apiKey=${OPENAI_API_KEY} -Dweather.visualcrossing.apiKey=${VISUALCROSSING_API_KEY} -Dflight.amadeus.client-id=${AMADEUS_CLIENT_ID} -Dflight.amadeus.client-secret=${AMADEUS_CLIENT_SECRET}'
+./mvnw spring-boot:run -Dspring-boot.run.jvmArguments='-Dspring.ai.openai.apiKey=${OPENAI_API_KEY} -Dweather.visualcrossing.apiKey=${VISUALCROSSING_API_KEY} -Dflight.amadeus.client-id=${AMADEUS_CLIENT_ID} -Dflight.amadeus.client-secret=${AMADEUS_CLIENT_SECRET}'
 ```
 This automatically starts the docker containers before starting the application and also stops it when 
 bringing the app down.
@@ -119,9 +134,7 @@ Below is sample output that has been produced by the run of the above using Open
 The question asked is:
 
 ```
-I live in Pittsburgh, PA and I love golf.
-In the fall of 2024, where should I fly to in Europe or the United States, to play, where the weather
-is pleasant and it's economical too?
+I live in Pittsburgh, PA and I love golf. In the fall of 2024, where should I fly to, in Europe or the United States, to play, where the weather is pleasant and it's economical too?
 ```
 
 Here is the response from OpenAI's GPT LLM after it has gathered information from the custom supplied functions.
@@ -177,19 +190,19 @@ However, if the query is changed to 'Where should I fly during summer to be heal
 Because of the way Spring-AI has implemented function calling, adding a new service is extremely easy:
 
 - Write a service that implements `Function<Request, Response>`. Or add this interface to an existing Spring managed service.
-- Ensure that the @JsonClassDescription describes what this function does.
-- Ensure that the @JsonPropertyDescription describes each input argument.
+- Use the `WeatherService` as an example.
+- Ensure that the @JsonClassDescription on the `Request` describes what this function does. (This constitutes the metadata sent to the LLM)
+- Ensure that the @JsonPropertyDescription describes each input argument. (This constitutes the metadata sent to the LLM)
 - The `apply` method of that service will take in a `Request` and return a `Response`. Implement it appropriately.
 - If you would like to use the RAG feature where only the metadata of functions that are relevant to the query is sent to the LLM, 
 ensure that the service is annotated with @RagCandidate.
 - The Spring Boot application can contain services that do _not_ implement `Function<Request, Response>` or `RagCandidate`. 
 - Note that the `Function<Request, Response>` interface and the `RagCandidate` annotation can be added to an existing
-Spring service. 
-- Use the `WeatherService` as an example.
+Spring service.
 - Configure these services as is done in <code>FunctionCallingConfig</code>
 - Invoke the <code>OpenAiChatClient</code> as is done in <code>VacationService</code>
-- Specify the <code>apiKey</code> and the <code>model</code> in the appropriate <code>application.yml</code> file as 
-  has been done in <code>application.yml</code> file.
+- Specify the <code>apiKey</code> and the <code>model</code> in the appropriate `-D propertiers on the CLI` as 
+  has been defined in the <code>application.yml</code> file.
 
 
 
@@ -256,9 +269,9 @@ Remember, variety in your diet is essential for health, so consider these dishes
 And here is what is happening under the covers:
 
 ```
-20240709T120831.175 INFO  [http-nio-8080-exec-2] c.t.a.v.s.RagService {} There were 5 ragCandidate beans defined in the context out of which 0 were vectorized and inserted into the vectorStore (probably because they already existed)
+20240709T120831.175 INFO  [http-nio-8080-exec-2] c.t.a.v.s.RagService {} There were 5 ragCandidate beans defined in the context out of which 0 were vectorized and inserted into the vectorStore (probably because they already existed in the vector store)
 20240709T120832.198 INFO  [http-nio-8080-exec-2] c.t.a.v.s.RagService {} There were 2 functions found that were relevant to the passed in query, with a distance range from 0.71621394 to 0.7551434
-20240709T120832.199 DEBUG [http-nio-8080-exec-2] c.t.a.v.s.RagService {} Functions being sent to LLM in descending order of relevance: [recipeService, financialService]
+20240709T120832.199 DEBUG [http-nio-8080-exec-2] c.t.a.v.s.RagService {} Functions metadata being sent to LLM in descending order of relevance: [recipeService, financialService]
 20240709T120834.637 INFO  [http-nio-8080-exec-2] c.t.a.v.s.FinancialService {} Called FinancialService with Request[accountNumber=123456]
 20240709T120834.640 INFO  [http-nio-8080-exec-2] c.t.a.v.s.FinancialService {} FinancialService response: Response[bankBalance=4500.0, monthlyIncome=1000.0]
 20240709T120849.790 INFO  [http-nio-8080-exec-2] c.t.a.v.s.RecipeService {} Called RecipeService with Request[dishName=Lentil Soup]
