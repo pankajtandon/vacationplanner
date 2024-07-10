@@ -9,7 +9,7 @@ tokens of function metadata sent to the LLMs.
 
 #### To build
 
-```agsl
+```
 ./mvnw clean install
 ```
 
@@ -24,7 +24,7 @@ export VIRTUALCROSSING_API_KEY=[api key (Create at https://www.visualcrossing.co
 export AMADEUS_CLIENT_ID=[api client Id (Create at https://www.accounts.amadeus.com/)]
 export AMADEUS_CLIENT_SECRET=[api client secret (Create at https://www.accounts.amadeus.com/)]
 ```
-- Supply an API Key for OpenAI via
+- Supply an API Key for OpenAI (LLM and embedding), VisualCrossing (Weather API), Amadeus (FlightService) via
    ```
     -Dspring.ai.openai.apiKey=${OPENAI_API_KEY}
     -Dweather.visualcrossing.apiKey=${VISUALCROSSING_API_KEY}
@@ -32,7 +32,7 @@ export AMADEUS_CLIENT_SECRET=[api client secret (Create at https://www.accounts.
     -Dflight.amadeus.client-secret=${AMADEUS_CLIENT_SECRET}
     ```
 - Run the test
-  ```agsl
+  ```
   mvn clean test
   ```
   You should see log output on the console that indicates how the LLM invokes your functions and infers data based on the results 
@@ -40,19 +40,77 @@ export AMADEUS_CLIENT_SECRET=[api client secret (Create at https://www.accounts.
 
 
 #### Running the webapp
+This app uses `elasticsearch` vector db for the RAG phase. (This is needed becase the much simpler file system based `SimpleVectorStore`
+implementation, does not support meta-data filtering which is needed by this example to support RAG.)
+It expects the elasticsearch db to be up on port 9200.
+The app uses `docker` to bring up elastic using `docker-compose` in the project root.
 
-After you have built the project, execute:
+After you have built the project, to execute it, there are two options:
+
+1. Bring up elastic search docker containers explicitly:
+From the project root:
+
 ```
-java -jar target/vacationplanner-0.0.1-SNAPSHOT.jar --spring.ai.openai.apiKey=${OPENAI_API_KEY} --weather.visualcrossing.apiKey=${VISUALCROSSING_API_KEY} --flight.amadeus.client-id=${AMADEUS_CLIENT_ID} --flight.amadeus.client-secret=${AMADEUS_CLIENT_SECRET} --spring.profiles.active=openai
+docker-compose up
+
+# When the containers are up:
+java -jar target/vacationplanner-0.0.1-SNAPSHOT.jar --spring.ai.openai.apiKey=${OPENAI_API_KEY} --weather.visualcrossing.apiKey=${VISUALCROSSING_API_KEY} --flight.amadeus.client-id=${AMADEUS_CLIENT_ID} --flight.amadeus.client-secret=${AMADEUS_CLIENT_SECRET}
 ```
 
+2. Use the `spring-boot-docker-compose` starter to integrate docker with the maven lifecycle.
+In this case, install `mvn` and the project source and then from the project root, execute:
 
+```
+mvn spring-boot:run -Dspring.ai.openai.apiKey=${OPENAI_API_KEY} -Dweather.visualcrossing.apiKey=${VISUALCROSSING_API_KEY} -Dflight.amadeus.client-id=${AMADEUS_CLIENT_ID} -Dflight.amadeus.client-secret=${AMADEUS_CLIENT_SECRET}
+```
+This automatically starts the docker containers before starting the application and also stops it when 
+bringing the app down.
+
+When the app is ready to receive traffic, you should see:
+
+```
+  .   ____          _            __ _ _
+ /\\ / ___'_ __ _ _(_)_ __  __ _ \ \ \ \
+( ( )\___ | '_ | '_| | '_ \/ _` | \ \ \ \
+ \\/  ___)| |_)| | | | | || (_| |  ) ) ) )
+  '  |____| .__|_| |_|_| |_\__, | / / / /
+ =========|_|==============|___/=/_/_/_/
+
+ :: Spring Boot ::                (v3.3.0)
+
+20240710T085833.785 INFO  [main] o.s.b.StartupInfoLogger {} Starting VacationplannerApplication using Java 17.0.7 with PID 52397 (/Users/pankaj/myProjects/ml/vacationplanner/target/classes started by pankaj in /Users/pankaj/myProjects/ml/vacationplanner)
+20240710T085833.791 DEBUG [main] o.s.b.StartupInfoLogger {} Running with Spring Boot v3.3.0, Spring v6.1.8
+20240710T085833.792 INFO  [main] o.s.b.SpringApplication {} No active profile set, falling back to 1 default profile: "default"
+20240710T085833.976 INFO  [main] o.s.b.d.c.l.DockerComposeLifecycleManager {} Using Docker Compose file '/Users/pankaj/myProjects/ml/vacationplanner/docker-compose.yml'
+20240710T085834.803 INFO  [OutputReader-stderr] o.s.b.l.LogLevel {}  Container es01  Created
+20240710T085834.803 INFO  [OutputReader-stderr] o.s.b.l.LogLevel {}  Container kib01  Created
+20240710T085834.808 INFO  [OutputReader-stderr] o.s.b.l.LogLevel {}  Container kib01  Starting
+20240710T085834.808 INFO  [OutputReader-stderr] o.s.b.l.LogLevel {}  Container es01  Starting
+20240710T085835.079 INFO  [OutputReader-stderr] o.s.b.l.LogLevel {}  Container es01  Started
+20240710T085835.104 INFO  [OutputReader-stderr] o.s.b.l.LogLevel {}  Container kib01  Started
+20240710T085835.105 INFO  [OutputReader-stderr] o.s.b.l.LogLevel {}  Container es01  Waiting
+20240710T085835.105 INFO  [OutputReader-stderr] o.s.b.l.LogLevel {}  Container kib01  Waiting
+20240710T085835.610 INFO  [OutputReader-stderr] o.s.b.l.LogLevel {}  Container kib01  Healthy
+20240710T085835.611 INFO  [OutputReader-stderr] o.s.b.l.LogLevel {}  Container es01  Healthy
+20240710T085856.045 INFO  [main] o.s.b.w.e.t.TomcatWebServer {} Tomcat initialized with port 8080 (http)
+20240710T085856.053 INFO  [main] o.a.j.l.DirectJDKLog {} Initializing ProtocolHandler ["http-nio-8080"]
+20240710T085856.054 INFO  [main] o.a.j.l.DirectJDKLog {} Starting service [Tomcat]
+20240710T085856.054 INFO  [main] o.a.j.l.DirectJDKLog {} Starting Servlet engine: [Apache Tomcat/10.1.24]
+20240710T085856.092 INFO  [main] o.a.j.l.DirectJDKLog {} Initializing Spring embedded WebApplicationContext
+20240710T085856.094 INFO  [main] o.s.b.w.s.c.ServletWebServerApplicationContext {} Root WebApplicationContext: initialization completed in 887 ms
+20240710T085856.963 INFO  [main] o.s.b.a.w.s.WelcomePageHandlerMapping {} Adding welcome page: class path resource [static/index.html]
+20240710T085857.457 INFO  [main] o.s.b.a.e.w.EndpointLinksResolver {} Exposing 15 endpoints beneath base path '/actuator'
+20240710T085857.514 INFO  [main] o.a.j.l.DirectJDKLog {} Starting ProtocolHandler ["http-nio-8080"]
+20240710T085857.526 INFO  [main] o.s.b.w.e.t.TomcatWebServer {} Tomcat started on port 8080 (http) with context path '/planner'
+20240710T085857.562 INFO  [main] o.s.b.StartupInfoLogger {} Started VacationplannerApplication in 24.029 seconds (process running for 25.268)
+```
 #### Interacting with the Webapp:
 ```
 curl -H "content-type: application/json" -X POST http://localhost:8080/planner/query -d '{"userQuery": "I live in Pittsburgh, PA and I love golf. In the fall of 2024, where should I fly to, in Europe or the United States, to play, where the weather is pleasant and it'\''s economical too?", "userSuppliedTopKFunctions": 4}'
 ```
 
-The second parameter in the JSON payload ("userSuppliedTopKFunctions") is optional and represents the number of functions that the application should consider based on the query asked. The higher the number, the more metadata is sent to the LLM and the more tokens will be spent.
+The second parameter in the JSON payload (`userSuppliedTopKFunctions`) is optional and represents the number of functions' metadata that the application should send to the LLM based on the query asked. The higher the number, the more metadata is sent to the LLM and the more tokens will be spent.
+If it is not specified, the value used is in the property `rag.topK`.
 
 
 #### Sample output
@@ -146,7 +204,10 @@ selectively by the LLM based on the query.
 A second question that uses a different set of functions could be:
 
 ```
-I need to remain healthy by following a vegetarian diet and also under budget. What dishes can you recommend so that I follow the 90 30 50 diet rule and such that it is also affordable over a year?
+I need to remain healthy by following a vegetarian diet and also under budget. 
+What dishes can you recommend so that I follow the 
+90 30 50 diet rule and such that it is also affordable
+over a year?
 ```
 
 This returns the following recommendation:

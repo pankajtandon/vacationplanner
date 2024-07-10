@@ -44,7 +44,7 @@ public class RagService {
         }
 
         Set<String> ragCandidateFunctionNameSet = getTopKFunctionNames(functionMap, Math.min(functionMap.size(),
-                (userSuppliedTopK == null ?  ragProperties.getTopK() : userSuppliedTopK)), query);
+                ((userSuppliedTopK == null || userSuppliedTopK == 0) ?  ragProperties.getTopK() : userSuppliedTopK)), query);
 
         return ragCandidateFunctionNameSet;
     }

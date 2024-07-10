@@ -40,3 +40,12 @@ flight:
 currency-exchange:
   vat-comply:
     url: https://api.vatcomply.com/rates
+
+management:
+  endpoint:
+    health:
+      show-details: ALWAYS
+  endpoints:
+    web:
+      exposure:
+        include: '*'
