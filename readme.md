@@ -167,23 +167,38 @@ Therefore, for a golf trip in the fall of 2024 that's both pleasant in terms of 
 Looking at the logs, we can see the following:
 
 ```
-20240709T121746.336 INFO  [http-nio-8080-exec-6] c.t.a.v.s.RagService {} There were 5 ragCandidate beans defined in the context out of which 0 were vectorized and inserted into the vectorStore (possibly because they already existed in the vector store)
-20240709T121749.020 INFO  [http-nio-8080-exec-6] c.t.a.v.s.RagService {} There were 4 functions found that were relevant to the passed in query, with a distance range from 0.6414832 to 0.7153696
-20240709T121749.021 DEBUG [http-nio-8080-exec-6] c.t.a.v.s.RagService {} Functions metadata being sent to LLM in descending order of relevance: [financialService, airfareService, weatherService, currencyExchangeService]
-20240709T121819.361 INFO  [http-nio-8080-exec-6] c.t.a.v.s.WeatherService {} Called WeatherService with request: Request[location=New York, NY, lat=40.7128, lon=-74.006, unit=F, month=October, year=2024]
-20240709T121819.597 INFO  [http-nio-8080-exec-6] c.t.a.v.s.WeatherService {} WeatherService returned: Response[temp=58.167741935483875, temp_min=52.403225806451616, temp_max=64.45806451612903, unit=F]
-20240709T121819.598 INFO  [http-nio-8080-exec-6] c.t.a.v.s.WeatherService {} Called WeatherService with request: Request[location=London, UK, lat=51.5074, lon=-0.1278, unit=C, month=October, year=2024]
-20240709T121819.630 INFO  [http-nio-8080-exec-6] c.t.a.v.s.WeatherService {} WeatherService returned: Response[temp=55.270967741935486, temp_min=50.458064516129035, temp_max=60.60645161290322, unit=F]
-20240709T121819.630 INFO  [http-nio-8080-exec-6] c.t.a.v.s.AirfareService {} Called AirfareService with Request[origin=Pittsburgh, PA, destination=New York, NY, currency=USD, originLatitude=40.4406, originLongitude=-79.9959, destinationLatitude=40.7128, destinationLongitude=-74.006, month=October, year=2024]
-20240709T121824.090 INFO  [http-nio-8080-exec-6] c.t.a.v.s.AirfareService {} AirfareService response: Response[airfare=91.39, currency=EUR]
-20240709T121824.091 INFO  [http-nio-8080-exec-6] c.t.a.v.s.AirfareService {} Called AirfareService with Request[origin=Pittsburgh, PA, destination=London, UK, currency=USD, originLatitude=40.4406, originLongitude=-79.9959, destinationLatitude=51.5074, destinationLongitude=-0.1278, month=October, year=2024]
-20240709T121829.385 INFO  [http-nio-8080-exec-6] c.t.a.v.s.AirfareService {} AirfareService response: Response[airfare=210.34, currency=EUR]
-20240709T121839.927 INFO  [http-nio-8080-exec-6] c.t.a.v.s.VacationService {} Returned a recommendation!
-
-
+20240710T101521.522 INFO  [http-nio-8080-exec-3] c.t.a.v.s.RagService {} There were 5 ragCandidate beans defined in the context out of which 0 were vectorized and inserted into the vectorStore (possibly because they already existed in vector store)
+20240710T101521.750 INFO  [http-nio-8080-exec-3] c.t.a.v.s.RagService {} There were 4 functions found that were relevant to the passed in query, with a distance range from 0.6414833 to 0.7153696
+20240710T101521.751 DEBUG [http-nio-8080-exec-3] c.t.a.v.s.RagService {} Functions metadata being sent to LLM in descending order of relevance: [financialService, airfareService, weatherService, currencyExchangeService]
+20240710T101529.608 INFO  [http-nio-8080-exec-3] c.t.a.v.s.WeatherService {} Called WeatherService with request: Request[location=San Francisco, CA, lat=37.7749, lon=-122.4194, unit=F, month=October, year=2024]
+20240710T101529.853 INFO  [http-nio-8080-exec-3] c.t.a.v.s.WeatherService {} WeatherService returned: Response[temp=60.5, temp_min=54.722580645161294, temp_max=68.75161290322582, unit=F]
+20240710T101529.854 INFO  [http-nio-8080-exec-3] c.t.a.v.s.WeatherService {} Called WeatherService with request: Request[location=Phoenix, AZ, lat=33.4484, lon=-112.074, unit=F, month=October, year=2024]
+20240710T101529.958 INFO  [http-nio-8080-exec-3] c.t.a.v.s.WeatherService {} WeatherService returned: Response[temp=77.0516129032258, temp_min=66.04838709677419, temp_max=88.2290322580645, unit=F]
+20240710T101529.958 INFO  [http-nio-8080-exec-3] c.t.a.v.s.WeatherService {} Called WeatherService with request: Request[location=Lisbon, Portugal, lat=38.7223, lon=-9.1393, unit=F, month=October, year=2024]
+20240710T101530.056 INFO  [http-nio-8080-exec-3] c.t.a.v.s.WeatherService {} WeatherService returned: Response[temp=65.5741935483871, temp_min=60.12903225806452, temp_max=72.92903225806452, unit=F]
+20240710T101530.057 INFO  [http-nio-8080-exec-3] c.t.a.v.s.WeatherService {} Called WeatherService with request: Request[location=Barcelona, Spain, lat=41.3851, lon=2.1734, unit=F, month=October, year=2024]
+20240710T101530.157 INFO  [http-nio-8080-exec-3] c.t.a.v.s.WeatherService {} WeatherService returned: Response[temp=64.94516129032257, temp_min=57.83548387096774, temp_max=71.9483870967742, unit=F]
+20240710T101541.870 INFO  [http-nio-8080-exec-3] c.t.a.v.s.AirfareService {} Called AirfareService with Request[origin=Pittsburgh, PA, destination=San Francisco, CA, currency=USD, originLatitude=40.4406, originLongitude=-79.9959, destinationLatitude=37.7749, destinationLongitude=-122.4194, month=October, year=2024]
+20240710T101548.601 INFO  [http-nio-8080-exec-3] c.t.a.v.s.AirfareService {} AirfareService response: Response[airfare=156.97, currency=EUR]
+20240710T101548.603 INFO  [http-nio-8080-exec-3] c.t.a.v.s.AirfareService {} Called AirfareService with Request[origin=Pittsburgh, PA, destination=Phoenix, AZ, currency=USD, originLatitude=40.4406, originLongitude=-79.9959, destinationLatitude=33.4484, destinationLongitude=-112.074, month=October, year=2024]
+20240710T101551.854 INFO  [http-nio-8080-exec-3] c.t.a.v.s.AirfareService {} AirfareService response: Response[airfare=164.51, currency=EUR]
+20240710T101551.855 INFO  [http-nio-8080-exec-3] c.t.a.v.s.AirfareService {} Called AirfareService with Request[origin=Pittsburgh, PA, destination=Lisbon, Portugal, currency=USD, originLatitude=40.4406, originLongitude=-79.9959, destinationLatitude=38.7223, destinationLongitude=-9.1393, month=October, year=2024]
+20240710T101556.770 INFO  [http-nio-8080-exec-3] c.t.a.v.s.AirfareService {} AirfareService response: Response[airfare=487.67, currency=EUR]
+20240710T101556.771 INFO  [http-nio-8080-exec-3] c.t.a.v.s.AirfareService {} Called AirfareService with Request[origin=Pittsburgh, PA, destination=Barcelona, Spain, currency=USD, originLatitude=40.4406, originLongitude=-79.9959, destinationLatitude=41.3851, destinationLongitude=2.1734, month=October, year=2024]
+20240710T101604.980 INFO  [http-nio-8080-exec-3] c.t.a.v.s.AirfareService {} AirfareService response: Response[airfare=391.33, currency=EUR]
+20240710T101610.690 INFO  [http-nio-8080-exec-3] c.t.a.v.s.CurrencyExchangeService {} Called CurrencyExchangeService with Request[amount=156.97, currencyIn=EUR, currencyOut=USD]
+20240710T101611.180 INFO  [http-nio-8080-exec-3] c.t.a.v.s.CurrencyExchangeService {} CurrencyExchangeService response: Response[amount=168.72705299999998, currencyOut=USD]
+20240710T101611.183 INFO  [http-nio-8080-exec-3] c.t.a.v.s.CurrencyExchangeService {} Called CurrencyExchangeService with Request[amount=164.51, currencyIn=EUR, currencyOut=USD]
+20240710T101611.333 INFO  [http-nio-8080-exec-3] c.t.a.v.s.CurrencyExchangeService {} CurrencyExchangeService response: Response[amount=176.831799, currencyOut=USD]
+20240710T101611.335 INFO  [http-nio-8080-exec-3] c.t.a.v.s.CurrencyExchangeService {} Called CurrencyExchangeService with Request[amount=487.67, currencyIn=EUR, currencyOut=USD]
+20240710T101611.493 INFO  [http-nio-8080-exec-3] c.t.a.v.s.CurrencyExchangeService {} CurrencyExchangeService response: Response[amount=524.1964830000001, currencyOut=USD]
+20240710T101611.494 INFO  [http-nio-8080-exec-3] c.t.a.v.s.CurrencyExchangeService {} Called CurrencyExchangeService with Request[amount=391.33, currencyIn=EUR, currencyOut=USD]
+20240710T101611.646 INFO  [http-nio-8080-exec-3] c.t.a.v.s.CurrencyExchangeService {} CurrencyExchangeService response: Response[amount=420.64061699999996, currencyOut=USD]
+20240710T101623.269 INFO  [http-nio-8080-exec-3] c.t.a.v.s.VacationService {} Returned a recommendation!
 ```
-Note that the `RecipeService` metadata is _NOT_ sent to the LLM because it is not relevant to the query.
-However, if the query is changed to 'Where should I fly during summer to be healthy'
+__Note__ that 4 functions' metadata are sent to the LLM and `RecipeService` metadata is _NOT_ sent to the LLM because it is not relevant to the query.
+Also note the requests (along with parameter values) and responses from each of the 4 functions between the LLM and this application.
+
 
 #### Adding a new service.
 
