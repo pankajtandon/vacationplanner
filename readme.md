@@ -139,27 +139,25 @@ I live in Pittsburgh, PA and I love golf. In the fall of 2024, where should I fl
 
 Here is the response from OpenAI's GPT LLM after it has gathered information from the custom supplied functions.
 ```
-For a golf trip in October 2024, between New York, NY, and London, UK, here are your options considering weather and airfare:
+Based on the weather and airfare for October 2024, here are your options for playing golf in pleasant weather conditions, also considering the cost efficiency:
 
-### Weather in October 2024
-- **New York, NY**
-  - Average Temperature: 58.17°F
-  - Min Average Temperature: 52.40°F
-  - Max Average Temperature: 64.46°F
+1. **San Francisco, CA**
+   - Weather: Average temp of 60.5°F, with a range between 54.7°F and 68.8°F.
+   - Airfare: Approximately $168.73 USD.
 
-- **London, UK**
-  - Average Temperature: 12.93°C (55.27°F)
-  - Min Average Temperature: 10.25°C (50.46°F)
-  - Max Average Temperature: 15.89°C (60.61°F)
+2. **Phoenix, AZ**
+   - Weather: Average temp of 77.1°F, with a range between 66.0°F and 88.2°F.
+   - Airfare: Approximately $176.83 USD.
 
-### Airfare (to Destination from Pittsburgh, PA)
-- **New York, NY**: €91.39
-- **London, UK**: €210.34
+3. **Lisbon, Portugal**
+   - Weather: Average temp of 65.6°F, with a range between 60.1°F and 72.9°F.
+   - Airfare: Approximately $524.20 USD.
 
-### Recommendation
-Considering both the weather and airfare, **New York, NY** offers a slightly warmer and more pleasant climate for golf in October 2024 compared to London, UK. Additionally, it's significantly more economical in terms of airfare to fly to New York from Pittsburgh, PA.
+4. **Barcelona, Spain**
+   - Weather: Average temp of 64.9°F, with a range between 57.8°F and 71.9°F.
+   - Airfare: Approximately $420.64 USD.
 
-Therefore, for a golf trip in the fall of 2024 that's both pleasant in terms of weather and economical, New York, NY would be the recommended destination over London, UK
+Considering both the pleasantness of the weather and the economic aspect, **Phoenix, AZ** offers the warmest temperatures ideal for golf, with a slightly higher but still reasonable airfare compared to San Francisco. However, if you prefer slightly cooler and more moderate temperatures, **San Francisco, CA** is the most economical and pleasant option among the locations evaluated. European destinations, while offering pleasant temperatures, are significantly more expensive in terms of airfare.
 ```
 
 #### What's happening under the covers:
