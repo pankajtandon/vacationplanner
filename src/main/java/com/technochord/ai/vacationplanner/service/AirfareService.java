@@ -4,6 +4,7 @@ import com.fasterxml.jackson.annotation.JsonClassDescription;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonPropertyDescription;
+import com.technochord.ai.vacationplanner.config.RagCandidate;
 import com.technochord.ai.vacationplanner.config.properties.FlightProperties;
 import com.technochord.ai.vacationplanner.model.Airports;
 import com.technochord.ai.vacationplanner.model.FlightOffers;
@@ -20,6 +21,7 @@ import java.util.Comparator;
 import java.util.Date;
 import java.util.function.Function;
 
+@RagCandidate
 public class AirfareService implements Function<AirfareService.Request, AirfareService.Response> {
 
     public static String GRANT_TYPE_CLIENT_CREDENTIALS = "client_credentials";

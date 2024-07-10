@@ -4,6 +4,7 @@ import com.fasterxml.jackson.annotation.JsonClassDescription;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonPropertyDescription;
+import com.technochord.ai.vacationplanner.config.RagCandidate;
 import com.technochord.ai.vacationplanner.config.properties.WeatherProperties;
 import com.technochord.ai.vacationplanner.model.MonthlyWeather;
 import org.slf4j.Logger;
@@ -15,6 +16,7 @@ import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.function.Function;
 
+@RagCandidate
 public class WeatherService implements Function<WeatherService.Request, WeatherService.Response> {
 
     private RestTemplate restTemplate;
@@ -77,7 +79,7 @@ public class WeatherService implements Function<WeatherService.Request, WeatherS
         log.info("Called WeatherService with request: " + request);
         MonthlyWeather monthlyWeather = this.getAverageWeather(request);
         Response response = new Response(monthlyWeather.getAverageTempForMonth(), monthlyWeather.getAverageMinTempForMonth(), monthlyWeather.getAverageMaxTempForMonth(), Unit.F);
-        log.info("WeaterService returned: " + response);
+        log.info("WeatherService returned: " + response);
         return response;
     }
 

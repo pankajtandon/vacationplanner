@@ -2,9 +2,12 @@ package com.technochord.ai.vacationplanner.config;
 
 import com.technochord.ai.vacationplanner.config.properties.CurrencyExchangeProperties;
 import com.technochord.ai.vacationplanner.config.properties.FlightProperties;
+import com.technochord.ai.vacationplanner.config.properties.RagProperties;
 import com.technochord.ai.vacationplanner.config.properties.WeatherProperties;
 import com.technochord.ai.vacationplanner.service.*;
 import org.springframework.ai.chat.model.ChatModel;
+import org.springframework.ai.model.function.FunctionCallbackContext;
+import org.springframework.ai.vectorstore.VectorStore;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -28,7 +31,16 @@ public class FunctionCallingConfig {
     private FlightProperties flightProperties;
 
     @Autowired
+    private RagProperties ragProperties;
+
+    @Autowired
     private CurrencyExchangeProperties currencyExchangeProperties;
+
+    @Autowired
+    private FunctionCallbackContext functionCallbackContext;
+
+    @Autowired
+    private VectorStore vectorStore;
 
     @Bean
     public Function<WeatherService.Request, WeatherService.Response> weatherService() {
@@ -51,7 +63,21 @@ public class FunctionCallingConfig {
     }
 
     @Bean
-    public VacationService vacationService(final ChatModel model) {
-        return new VacationService(model);
+    public Function<RecipeService.Request, RecipeService.Response> recipeService() {
+        return new RecipeService();
+    }
+
+    @Bean
+    public RagService ragService() {
+        return new RagService(ragCandidateServiceContext(), vectorStore, functionCallbackContext, ragProperties);
+    }
+    @Bean
+    public VacationService vacationService() {
+        return new VacationService(chatModel, functionCallbackContext, ragService());
+    }
+
+    @Bean
+    public RagCandidateSpringContext ragCandidateServiceContext() {
+        return new RagCandidateSpringContext();
     }
 }

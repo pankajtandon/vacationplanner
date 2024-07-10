@@ -1,20 +1,27 @@
-
+server:
+  servlet:
+    context-path: /planner
 spring:
-  main:
-    web-application-type: NONE
   ai:
     openai:
       api-key: <passed from CLI>
       chat:
         options:
           model: gpt-4-0125-preview
-    mistralai:
-      api-key: <passed from CLI>
-      chat:
-        options:
-          model: open-mixtral-8x22b
+      embedding:
+        enabled: true
+
+  elasticsearch:
+    uris: http://localhost:9200
+#    username: elastic
+#    password: changeme
+
 logging:
   config: classpath:log4j2.xml
+
+rag:
+  topK: 5
+  similarity-threshold: 0.1
 
 weather:
   visualcrossing:
@@ -33,3 +40,12 @@ flight:
 currency-exchange:
   vat-comply:
     url: https://api.vatcomply.com/rates
+
+management:
+  endpoint:
+    health:
+      show-details: ALWAYS
+  endpoints:
+    web:
+      exposure:
+        include: '*'
