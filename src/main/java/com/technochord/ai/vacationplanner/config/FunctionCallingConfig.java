@@ -6,7 +6,7 @@ import com.technochord.ai.vacationplanner.config.properties.RagProperties;
 import com.technochord.ai.vacationplanner.config.properties.WeatherProperties;
 import com.technochord.ai.vacationplanner.service.*;
 import org.springframework.ai.chat.model.ChatModel;
-import org.springframework.ai.model.function.FunctionCallbackContext;
+import org.springframework.ai.model.function.FunctionCallbackResolver;
 import org.springframework.ai.vectorstore.VectorStore;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
@@ -22,6 +22,9 @@ public class FunctionCallingConfig {
     private ChatModel chatModel;
 
     @Autowired
+    private FunctionCallbackResolver functionCallbackResolver;
+
+    @Autowired
     private RestTemplate restTemplate;
 
     @Autowired
@@ -35,9 +38,6 @@ public class FunctionCallingConfig {
 
     @Autowired
     private CurrencyExchangeProperties currencyExchangeProperties;
-
-    @Autowired
-    private FunctionCallbackContext functionCallbackContext;
 
     @Autowired
     private VectorStore vectorStore;
@@ -69,11 +69,11 @@ public class FunctionCallingConfig {
 
     @Bean
     public RagService ragService() {
-        return new RagService(ragCandidateServiceContext(), vectorStore, functionCallbackContext, ragProperties);
+        return new RagService(ragCandidateServiceContext(), vectorStore, functionCallbackResolver, ragProperties);
     }
     @Bean
     public VacationService vacationService() {
-        return new VacationService(chatModel, functionCallbackContext, ragService());
+        return new VacationService(chatModel, ragService());
     }
 
     @Bean

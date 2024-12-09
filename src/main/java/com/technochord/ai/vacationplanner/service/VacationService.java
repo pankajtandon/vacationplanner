@@ -5,7 +5,6 @@ import org.springframework.ai.chat.messages.UserMessage;
 import org.springframework.ai.chat.model.ChatModel;
 import org.springframework.ai.chat.model.ChatResponse;
 import org.springframework.ai.chat.prompt.Prompt;
-import org.springframework.ai.model.function.FunctionCallbackContext;
 import org.springframework.ai.openai.OpenAiChatOptions;
 
 import java.util.List;
@@ -15,15 +14,12 @@ import java.util.Set;
 public class VacationService {
 
     private ChatModel chatModel;
-    private FunctionCallbackContext functionCallbackContext;
 
     private RagService ragService;
 
     public VacationService(final ChatModel model,
-                           final FunctionCallbackContext functionCallbackContext,
                            final RagService ragService) {
         this.chatModel = model;
-        this.functionCallbackContext = functionCallbackContext;
         this.ragService = ragService;
     }
 

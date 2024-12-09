@@ -3,13 +3,12 @@ package com.technochord.ai.vacationplanner.config;
 import org.springframework.ai.autoconfigure.openai.OpenAiChatProperties;
 import org.springframework.ai.autoconfigure.openai.OpenAiConnectionProperties;
 import org.springframework.ai.chat.model.ChatModel;
-import org.springframework.ai.model.function.FunctionCallbackContext;
+import org.springframework.ai.model.function.FunctionCallbackResolver;
 import org.springframework.ai.openai.OpenAiChatModel;
 import org.springframework.ai.openai.OpenAiChatOptions;
 import org.springframework.ai.openai.api.OpenAiApi;
 import org.springframework.ai.retry.RetryUtils;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.cloud.function.context.FunctionRegistry;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Primary;
@@ -25,9 +24,8 @@ public class OpenAiConfig {
     }
 
     @Autowired
-    private FunctionCallbackContext functionCallbackContext;
-
-    private FunctionRegistry functionRegistry;
+    //private FunctionCallbackContext functionCallbackContext;
+    private FunctionCallbackResolver functionCallbackResolver;
 
     //private FunctionCall
 
@@ -39,11 +37,13 @@ public class OpenAiConfig {
     @Primary
     @Bean
     public ChatModel chatModel() {
-        OpenAiChatModel chatModel = new OpenAiChatModel(openAiApi(), OpenAiChatOptions.builder()
+        OpenAiChatModel chatModel = new OpenAiChatModel(
+                openAiApi(),
+                OpenAiChatOptions.builder()
                 .withModel(openAiChatProperties.getOptions().getModel())
                 //.withFunctions(Set.of("currencyExchangeService", "airfareService", "weatherService", "financialService"))
                 .build(),
-                functionCallbackContext,
+                functionCallbackResolver,
                 RetryUtils.DEFAULT_RETRY_TEMPLATE
         );
         return chatModel;

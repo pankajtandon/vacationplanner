@@ -60,9 +60,29 @@ implementation, does not support meta-data filtering which is needed by this exa
 It expects the elasticsearch db to be up on port 9200.
 The app uses `docker` to bring up elastic using `docker-compose` in the project root.
 
-After you have built the project, to execute it, there are two options:
+After you have built the project, to execute it:
 
-1. Bring up elastic search docker containers explicitly:
+Use the `spring-boot-docker-compose` starter to integrate docker with the maven lifecycle.
+In this case, install `mvn` and the project source and then from the project root, execute:
+
+```
+./mvnw spring-boot:run -Dspring-boot.run.jvmArguments='-Dspring.ai.openai.apiKey=${OPENAI_API_KEY} -Dweather.visualcrossing.apiKey=${VISUALCROSSING_API_KEY} -Dflight.amadeus.client-id=${AMADEUS_CLIENT_ID} -Dflight.amadeus.client-secret=${AMADEUS_CLIENT_SECRET}'
+```
+This automatically starts the docker containers before starting the application and also stops it when
+bringing the app down.
+
+
+If you would like to explicitly bring up the docker container, but first comment out the dependency:
+```agsl
+		<dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-docker-compose</artifactId>
+			<optional>true</optional>
+		</dependency>
+```
+from the pom.xml.
+
+Next bring up elastic search docker containers explicitly 
 From the project root:
 
 ```
@@ -71,15 +91,6 @@ docker-compose up
 # When the containers are up:
 java -jar target/vacationplanner-0.0.1-SNAPSHOT.jar --spring.ai.openai.apiKey=${OPENAI_API_KEY} --weather.visualcrossing.apiKey=${VISUALCROSSING_API_KEY} --flight.amadeus.client-id=${AMADEUS_CLIENT_ID} --flight.amadeus.client-secret=${AMADEUS_CLIENT_SECRET}
 ```
-
-2. Use the `spring-boot-docker-compose` starter to integrate docker with the maven lifecycle.
-In this case, install `mvn` and the project source and then from the project root, execute:
-
-```
-./mvnw spring-boot:run -Dspring-boot.run.jvmArguments='-Dspring.ai.openai.apiKey=${OPENAI_API_KEY} -Dweather.visualcrossing.apiKey=${VISUALCROSSING_API_KEY} -Dflight.amadeus.client-id=${AMADEUS_CLIENT_ID} -Dflight.amadeus.client-secret=${AMADEUS_CLIENT_SECRET}'
-```
-This automatically starts the docker containers before starting the application and also stops it when 
-bringing the app down.
 
 When the app is ready to receive traffic, you should see:
 
@@ -121,7 +132,7 @@ When the app is ready to receive traffic, you should see:
 ```
 #### Interacting with the Webapp:
 ```
-curl -H "content-type: application/json" -X POST http://localhost:8080/planner/query -d '{"userQuery": "I live in Pittsburgh, PA and I love golf. In the fall of 2024, where should I fly to, in Europe or the United States, to play, where the weather is pleasant and it'\''s economical too?", "userSuppliedTopKFunctions": 4}'
+curl -H "content-type: application/json" -X GET http://localhost:8080/planner/query -d '{"userQuery": "I live in Pittsburgh, PA and I love golf. In the fall of 2024, where should I fly to, in Europe or the United States, to play, where the weather is pleasant and it'\''s economical too?", "userSuppliedTopKFunctions": 4}'
 ```
 
 The second parameter in the JSON payload (`userSuppliedTopKFunctions`) is optional and represents the number of functions' metadata that the application should send to the LLM based on the query asked. The higher the number, the more metadata is sent to the LLM and the more tokens will be spent.
@@ -301,5 +312,73 @@ And here is what is happening under the covers:
 
 ```
 Note that the `AirfareService`, `WeatherService` and `CurrencyExchangeService` metadata is _NOT_ sent to the LLM for this query.
+
+
+Here is another example that uses a different set of functions (thereby demonstrating that not all functions are sent to the LLM and save tokens):
+
+#### Prompt
+
+```agsl
+curl -H "content-type: application/json" -X GET http://localhost:8080/planner/query -d '{"userQuery": "What dishes should I eat to  maintain a vegetarian diet and get enough nutrition to lead a healthy lifestyle while not breaking the bank!", "userSuppliedTopKFunctions": 4}'
+```
+
+#### Response:
+```agsl
+Based on the nutritional content and cost analysis of the two dishes mentioned, here's a brief overview:
+
+### Lentil Soup
+- **Protein**: 15% of calories
+- **Carbs**: 25% of calories
+- **Fat**: 60% of calories (It's worth noting that this high fat percentage could be from healthy fats like olive oil, which is commonly used in lentil soup recipes.)
+- **Total Calories**: 950
+- **Cost**: $23 per serving
+
+### Quinoa Bowl
+- **Protein**: 32% of calories
+- **Carbs**: 28% of calories
+- **Fat**: 40% of calories
+- **Total Calories**: 1000
+- **Cost**: $20 per serving
+
+Both dishes provide a good balance of macronutrients, with the Quinoa Bowl offering a higher protein percentage, which is excellent for a vegetarian diet to ensure adequate protein intake. The costs associated with these dishes, however, suggest they might be on the higher end for those looking to minimize expenses. The prices provided could reflect a restaurant setting or high-quality ingredients. For a more budget-friendly approach, consider sourcing ingredients in bulk, looking for sales, or substituting for more cost-effective alternatives without compromising nutritional value.
+
+To maintain a healthy lifestyle on a vegetarian diet without breaking the bank, focus on dishes like these but always look for ways to optimize the cost without sacrificing nutritional quality. Buying seasonal vegetables, using legumes and grains as staples, and preparing meals in bulk can further help manage expenses.
+
+```
+
+
+What's happening under the hood:
+
+```agsl
+
+
+20241209T160758.806 DEBUG [http-nio-8080-exec-2] c.t.a.v.s.RagService {} Functions metadata being sent to LLM in descending order of relevance: [recipeService, financialService]
+20241209T160817.832 INFO  [http-nio-8080-exec-2] c.t.a.v.s.RecipeService {} Called RecipeService with Request[dishName=Lentil Soup]
+20241209T160817.836 INFO  [http-nio-8080-exec-2] c.t.a.v.s.RecipeService {} RecipeService response: Response[proteinPercent=15.0, carbPercent=25.0, fatPercent=60.0, calories=950.0, cost=23.0]
+20241209T160817.837 INFO  [http-nio-8080-exec-2] c.t.a.v.s.RecipeService {} Called RecipeService with Request[dishName=Quinoa Bowl]
+20241209T160817.838 INFO  [http-nio-8080-exec-2] c.t.a.v.s.RecipeService {} RecipeService response: Response[proteinPercent=32.0, carbPercent=28.0, fatPercent=40.0, calories=1000.0, cost=20.0]
+20241209T160817.847 DEBUG [http-nio-8080-exec-2] o.s.w.c.DefaultRestClient$DefaultRequestBodyUriSpec {} Writing [ChatCompletionRequest[messages=[ChatCompletionMessage[rawContent=What dishes should I eat to  maintain a vegetarian diet and get enough nutrition to lead a healthy lifestyle while not breaking the bank!, role=USER, name=null, toolCallId=null, toolCalls=null, refusal=null, audioOutput=null], ChatCompletionMessage[rawContent=Maintaining a vegetarian diet while ensuring you get enough nutrition and keeping costs down involves choosing dishes that are nutrient-dense, high in protein, and made with cost-effective ingredients. Here’s a list of dishes that fit these criteria, along with a brief explanation of their nutritional benefits:
+
+1. **Lentil Soup**: Lentils are an excellent source of protein and fiber. They’re also rich in iron and folate. Lentil soup can include a variety of vegetables, enhancing its vitamin and mineral content.
+
+2. **Chickpea Salad**: Chickpeas are another great source of protein and fiber. A chickpea salad with a variety of colorful vegetables and a simple olive oil and lemon juice dressing can be both nutritious and affordable.
+
+3. **Quinoa Bowl**: Quinoa is a complete protein, meaning it contains all nine essential amino acids. A quinoa bowl with roasted vegetables and a tahini sauce can provide a balanced meal with good fats, protein, and carbs.
+
+4. **Vegetable Stir-Fry with Tofu**: Tofu is a versatile protein source, and when combined with a variety of vegetables and a soy sauce-based marinade, it can make for a delicious and nutritious stir-fry.
+
+5. **Vegetable and Bean Chili**: Beans are not only a great source of protein but also rich in fiber and iron. A hearty vegetable and bean chili can be a warming and filling meal.
+
+6. **Spinach and Ricotta Stuffed Pasta**: For a more indulgent yet balanced meal, whole wheat pasta stuffed with spinach and ricotta offers a good mix of carbs, protein, and fat, along with the added nutritional benefits of spinach.
+
+7. **Eggplant Parmesan**: Eggplant is a low-calorie vegetable rich in fiber and antioxidants. Baked eggplant parmesan can be a healthier version of the classic dish, using less cheese and whole grain breadcrumbs for added nutrition.
+
+8. **Sweet Potato and Black Bean Tacos**: Sweet potatoes are a fantastic source of vitamin A, C, and manganese. Combined with black beans, these tacos provide a nutritious, flavorful, and affordable meal option.
+
+To give you an idea of the nutritional content and cost of these dishes, let's use the recipe service for a couple of examples: Lentil Soup and Quinoa Bowl. This will give us a snapshot of their nutritional value and how they fit into a budget-friendly vegetarian diet., role=ASSISTANT, name=null, toolCallId=null, toolCalls=[ToolCall[index=null, id=call_99eWR8Q4Kr9tr8VvagEOBk1W, type=function, function=ChatCompletionFunction[name=recipeService, arguments={"dishName": "Lentil Soup"}]], ToolCall[index=null, id=call_HtesbCDnVX4zIrvbFLBcTEK3, type=function, function=ChatCompletionFunction[name=recipeService, arguments={"dishName": "Quinoa Bowl"}]]], refusal=null, audioOutput=null], ChatCompletionMessage[rawContent={"proteinPercent":15.0,"carbPercent":25.0,"fatPercent":60.0,"calories":950.0,"cost":23.0}, role=TOOL, name=recipeService, toolCallId=call_99eWR8Q4Kr9tr8VvagEOBk1W, toolCalls=null, refusal=null, audioOutput=null], ChatCompletionMessage[rawContent={"proteinPercent":32.0,"carbPercent":28.0,"fatPercent":40.0,"calories":1000.0,"cost":20.0}, role=TOOL, name=recipeService, toolCallId=call_HtesbCDnVX4zIrvbFLBcTEK3, toolCalls=null, refusal=null, audioOutput=null]], model=gpt-4-0125-preview, store=null, metadata=null, frequencyPenalty=null, logitBias=null, logprobs=null, topLogprobs=null, maxTokens=null, maxCompletionTokens=null, n=null, outputModalities=null, audioParameters=null, presencePenalty=null, responseFormat=null, seed=null, serviceTier=null, stop=null, stream=false, streamOptions=null, temperature=0.7, topP=null, tools=[org.springframework.ai.openai.api.OpenAiApi$FunctionTool@1a443e53, org.springframework.ai.openai.api.OpenAiApi$FunctionTool@605f8d20], toolChoice=null, parallelToolCalls=null, user=null]] as "application/json" with org.springframework.http.converter.json.MappingJackson2HttpMessageConverter
+20241209T160827.384 INFO  [http-nio-8080-exec-2] c.t.a.v.s.VacationService {} Returned a recommendation!
+```
+
+In this example, note metadata from only 2 of the 5 available functions are sent to the LLM, thereby saving costs.
 
 Thus, we have combined the powerful function calling feature with the RAG technique in this application.

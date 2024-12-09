@@ -16,7 +16,7 @@
 	<properties>
 		<java.version>17</java.version>
 		<spring.ai.version>1.0.0-SNAPSHOT</spring.ai.version>
-		<lombok.version>1.18.26</lombok.version>
+		<lombok.version>1.18.30</lombok.version>
 	</properties>
 	<repositories>
 		<repository>
@@ -85,6 +85,7 @@
 		<dependency>
 			<groupId>org.springframework.boot</groupId>
 			<artifactId>spring-boot-docker-compose</artifactId>
+			<optional>true</optional>
 		</dependency>
 		<dependency>
 			<groupId>org.apache.commons</groupId>

@@ -5,7 +5,7 @@ import com.technochord.ai.vacationplanner.config.properties.RagProperties;
 import lombok.extern.log4j.Log4j2;
 import org.springframework.ai.document.Document;
 import org.springframework.ai.model.function.FunctionCallback;
-import org.springframework.ai.model.function.FunctionCallbackContext;
+import org.springframework.ai.model.function.FunctionCallbackResolver;
 import org.springframework.ai.vectorstore.SearchRequest;
 import org.springframework.ai.vectorstore.VectorStore;
 
@@ -19,17 +19,17 @@ public class RagService {
 
     private VectorStore vectorStore;
 
-    private FunctionCallbackContext functionCallbackContext;
+    private FunctionCallbackResolver functionCallbackResolver;
 
     private RagProperties ragProperties;
 
     public RagService(final RagCandidateSpringContext ragCandidateSpringContext,
                       final VectorStore vectorStore,
-                      final FunctionCallbackContext functionCallbackContext,
+                      final FunctionCallbackResolver functionCallbackResolver,
                       final RagProperties ragProperties) {
         this.ragCandidateSpringContext = ragCandidateSpringContext;
         this.vectorStore = vectorStore;
-        this.functionCallbackContext = functionCallbackContext;
+        this.functionCallbackResolver = functionCallbackResolver;
         this.ragProperties = ragProperties;
     }
 
@@ -38,7 +38,7 @@ public class RagService {
         Map<String, String> functionMap = new Hashtable();
         if (ragBeans != null) {
             for (String beanName: ragBeans) {
-                FunctionCallback functionCallback = functionCallbackContext.getFunctionCallback(beanName, null);
+                FunctionCallback functionCallback = functionCallbackResolver.resolve(beanName);
                 functionMap.put(functionCallback.getName(), functionCallback.getDescription());
             }
         }
@@ -87,8 +87,8 @@ public class RagService {
                     "Returing an empty set. Query is: {}", ragProperties.getSimilarityThreshold(), query);
             return Collections.EMPTY_SET;
         } else {
-            Float max = Collections.max(retrievedTopK.stream().map(d -> (Float) d.getMetadata().get("distance")).collect(Collectors.toList()));
-            Float min = Collections.min(retrievedTopK.stream().map(d -> (Float) d.getMetadata().get("distance")).collect(Collectors.toList()));
+            Double max = Collections.max(retrievedTopK.stream().map(d -> (Double) d.getMetadata().get("distance")).collect(Collectors.toList()));
+            Double min = Collections.min(retrievedTopK.stream().map(d -> (Double) d.getMetadata().get("distance")).collect(Collectors.toList()));
             List<String> nameList = retrievedTopK.stream().map(d -> (String) d.getMetadata().get("name")).collect(Collectors.toList());
 
             log.info("There were {} functions found that were relevant to the passed in query, with a distance range from {} to {}", nameList.size(), min, max);
