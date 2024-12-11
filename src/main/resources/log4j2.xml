@@ -12,7 +12,6 @@
         <AppenderRef ref="Console" />
     </Root>
     <Logger name="com.technochord" level="DEBUG"></Logger>
-    <Logger name="org.springframework" level="DEBUG"></Logger>
 </Loggers>
 
 </Configuration>

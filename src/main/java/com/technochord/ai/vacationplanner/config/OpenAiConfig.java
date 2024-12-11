@@ -24,10 +24,7 @@ public class OpenAiConfig {
     }
 
     @Autowired
-    //private FunctionCallbackContext functionCallbackContext;
     private FunctionCallbackResolver functionCallbackResolver;
-
-    //private FunctionCall
 
     @Autowired
     private OpenAiChatProperties openAiChatProperties;
@@ -41,6 +38,7 @@ public class OpenAiConfig {
                 openAiApi(),
                 OpenAiChatOptions.builder()
                 .withModel(openAiChatProperties.getOptions().getModel())
+                .withTemperature(openAiChatProperties.getOptions().getTemperature())
                 //.withFunctions(Set.of("currencyExchangeService", "airfareService", "weatherService", "financialService"))
                 .build(),
                 functionCallbackResolver,

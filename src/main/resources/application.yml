@@ -7,9 +7,16 @@ spring:
       api-key: <passed from CLI>
       chat:
         options:
-          model: gpt-4-0125-preview
+          # model: gpt-4o # meh
+          # model: gpt-4o-mini - no significant improvement over gpt-4-0125-preview
+          model: gpt-4o-2024-11-20 # - Best performance
+          # model: o1-preview - does not support FC
+          temperature: 0.7
       embedding:
         enabled: true
+    vectorstore:
+      elasticsearch:
+        initialize-schema: true # This creates the index for the embeddings.
 
   elasticsearch:
     uris: http://localhost:9200
