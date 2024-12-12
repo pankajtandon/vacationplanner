@@ -1,6 +1,7 @@
 package com.technochord.ai.vacationplanner.service;
 
 import lombok.extern.log4j.Log4j2;
+import org.springframework.ai.chat.messages.SystemMessage;
 import org.springframework.ai.chat.messages.UserMessage;
 import org.springframework.ai.chat.model.ChatModel;
 import org.springframework.ai.chat.model.ChatResponse;
@@ -25,9 +26,10 @@ public class VacationService {
 
     public String planVacation(final String message, final int userSuppliedTopK) {
         UserMessage userMessage = new UserMessage(message);
+        SystemMessage systemMessage = new SystemMessage("Format the response using markdown");
         Set<String> ragBeans = ragService.getRagCandidateFunctionNameSet(userMessage.getContent(), userSuppliedTopK);
 
-        Prompt prompt = new Prompt(List.of(userMessage), OpenAiChatOptions.builder()
+        Prompt prompt = new Prompt(List.of(systemMessage, userMessage), OpenAiChatOptions.builder()
                 .withFunctions(ragBeans).build());
 
         ChatResponse response = chatModel.call(prompt);

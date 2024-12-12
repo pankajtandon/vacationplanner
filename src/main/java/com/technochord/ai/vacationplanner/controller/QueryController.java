@@ -3,21 +3,28 @@ package com.technochord.ai.vacationplanner.controller;
 import com.technochord.ai.vacationplanner.service.VacationService;
 import lombok.Getter;
 import lombok.Setter;
+import lombok.ToString;
+import lombok.extern.log4j.Log4j2;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+@CrossOrigin
 @RestController
 @RequestMapping("/query")
+@Log4j2
 public class QueryController {
 
     @Autowired
     private VacationService vacationService;
 
-    @GetMapping
-    public ResponseEntity<String> getResponse(@RequestBody Query query) {
-        return new ResponseEntity<>(vacationService.planVacation(query.getUserQuery(), query.getUserSuppliedTopKFunctions()), HttpStatus.OK);
+    @PostMapping
+    public ResponseEntity<LLMResponse> getResponse(@RequestBody Query query) {
+        LLMResponse llmResponse = new LLMResponse();
+        llmResponse.setAnswer(vacationService.planVacation(query.getUserQuery(), query.getUserSuppliedTopKFunctions()));
+        log.info("LLMResponse: " + llmResponse);
+        return new ResponseEntity<>(llmResponse, HttpStatus.OK);
     }
 
     @Getter
@@ -34,7 +41,6 @@ public class QueryController {
      * `rag.topK` property will be used.
      */
     public static class Query {
-
         /**
          * The query sent to the LLM.
          */
@@ -46,5 +52,15 @@ public class QueryController {
          * more tokens being consumed.
          */
         private int userSuppliedTopKFunctions;
+    }
+
+    @Getter
+    @Setter
+    @ToString
+    public static class LLMResponse {
+        /**
+         * The response returned by the LLM.
+         */
+        private String answer;
     }
 }
