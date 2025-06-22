@@ -29,7 +29,8 @@ public class VacationService {
         SystemMessage systemMessage = new SystemMessage("Format the response using markdown. Make assumptions, without asking clarifying questions.");
         Set<String> ragBeans = ragService.getRagCandidateFunctionNameSet(userMessage.getText(), userSuppliedTopK);
 
-        Prompt prompt = new Prompt(List.of(systemMessage, userMessage), OpenAiChatOptions.builder().toolNames()
+        Prompt prompt = new Prompt(List.of(systemMessage, userMessage),
+                OpenAiChatOptions.builder()
                 .toolNames(ragBeans).build());
 
         ChatResponse response = chatModel.call(prompt);
