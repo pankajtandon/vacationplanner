@@ -82,14 +82,17 @@ If you would like to explicitly bring up the docker container, but first comment
 ```
 from the pom.xml.
 
-Next bring up elastic search docker containers explicitly 
+#### Currently this is not working on a mac and results in a 'ClassNotFoundException: javax.management.MBeanRegistration'. This is happening with
+a demo app from spring initializer also. WIP:
+
+Next bring up elastic search or PGVector docker containers explicitly 
 From the project root:
 
 ```
-docker-compose up
+docker compose up
 
 # When the containers are up:
-java -jar target/vacationplanner-0.0.1-SNAPSHOT.jar --spring.ai.openai.apiKey=${OPENAI_API_KEY} --weather.visualcrossing.apiKey=${VISUALCROSSING_API_KEY} --flight.amadeus.client-id=${AMADEUS_CLIENT_ID} --flight.amadeus.client-secret=${AMADEUS_CLIENT_SECRET}
+java -jar target/planner-0.0.1-SNAPSHOT.jar --spring.ai.openai.apiKey=${OPENAI_API_KEY} --weather.visualcrossing.apiKey=${VISUALCROSSING_API_KEY} --flight.amadeus.client-id=${AMADEUS_CLIENT_ID} --flight.amadeus.client-secret=${AMADEUS_CLIENT_SECRET}
 ```
 
 When the app is ready to receive traffic, you should see:

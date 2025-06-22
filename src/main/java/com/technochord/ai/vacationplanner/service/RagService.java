@@ -55,26 +55,20 @@ public class RagService {
 
         //During testing, delete everything
         FilterExpressionBuilder b = new FilterExpressionBuilder();
-        vectorStore.delete(b.eq("a", "a").build());
 
         AtomicInteger vectorizeCount = new AtomicInteger();
         //Add function metadata to vectorStore if not exist
         if (functionMap != null) {
             functionMap.keySet().stream().forEach(k -> {
                 List<Document> retrievedDocList = vectorStore.similaritySearch(SearchRequest.builder()
-                                .query(".")
-                                .topK(1)
-                                .similarityThresholdAll()
-                                .filterExpression("name == '" + k + "'").build());
+                                .query(functionMap.get(k))
+                                .filterExpression(b.eq("name", k).build()).build());
 
-                //Temp
-                vectorStore.delete(retrievedDocList.stream().map(d -> d.getId()).toList());
-                retrievedDocList = vectorStore.similaritySearch(SearchRequest.builder()
-                        .query(".")
-                        .topK(1)
-                        .similarityThresholdAll()
-                        .filterExpression("name == '" + k + "'").build());
-
+                if (ragProperties.isDeletePreviousRelatedEmbeddings() && retrievedDocList != null) {
+                    //Delete this embedding
+                    vectorStore.delete(retrievedDocList.stream().map(d -> d.getId()).toList());
+                    retrievedDocList = null;
+                }
                 if (retrievedDocList == null || retrievedDocList.size() == 0) {
                     //Insert into vectorStore
                     Document doc = new Document(functionMap.get(k), Map.of("name", k));
@@ -85,7 +79,10 @@ public class RagService {
 
             log.info("There were {} ragCandidate beans defined in the context out of which {} were " +
                             "vectorized and inserted into the vectorStore " +
-                            (vectorizeCount.get() < functionMap.size() ? "(possibly because they already existed in vector store)" : ""),
+                            (vectorizeCount.get() < functionMap.size() ? "(possibly because they already existed in vector store. " +
+                                    "If you would like to re-embed these RagCandidates, then set rag.delete-previous-related-embeddings to true)"
+                                    : "(Possibly because this is the first time these embeddings are being stored " +
+                                    "or because rag.delete-previous-related-embeddings is set to true.)"),
                     functionMap.size(), vectorizeCount.get());
         }
 

@@ -1,6 +1,8 @@
 server:
   servlet:
     context-path: /planner
+
+
 spring:
   ai:
     openai:
@@ -40,6 +42,8 @@ logging:
 rag:
   topK: 5
   similarity-threshold: 0.1
+  # Delete previously stored embeddings that are related to the embedding that is currently being processed?
+  delete-previous-related-embeddings: true
 
 weather:
   visualcrossing:

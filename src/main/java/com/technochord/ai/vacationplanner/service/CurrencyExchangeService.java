@@ -38,16 +38,15 @@ public class CurrencyExchangeService implements Function<CurrencyExchangeService
     }
 
     @JsonInclude(JsonInclude.Include.NON_NULL)
-    @JsonClassDescription("The currency specified in currencyOut after applying the appropriate exchange " +
-        "rate to the amount in the currency passed in as currencyIn")
+    @JsonClassDescription("This returns the desired airfare currency by applying the current exchange rate to the amount of airfare passed in.")
     public record Request(
         @JsonProperty(required = true,
-            value = "amount") @JsonPropertyDescription("The amount of any given currency") double amount,
+            value = "amount") @JsonPropertyDescription("The amount of any given currency specified as currencyIn") double amount,
         @JsonProperty(required = true,
-            value = "currencyIn") @JsonPropertyDescription("The currency in which amount is specified") AirfareService.Currency currencyIn,
+            value = "currencyIn") @JsonPropertyDescription("The currency symbol to to which the exchange rate has to be applied to") AirfareService.Currency currencyIn,
 
         @JsonProperty(required = false,
-            value = "currencyOut") @JsonPropertyDescription("The currency in which amount is required") AirfareService.Currency currencyOut
+            value = "currencyOut") @JsonPropertyDescription("The currency symbol that the converted currency is needed in.") AirfareService.Currency currencyOut
         )
     {
     }

@@ -10,4 +10,5 @@ import org.springframework.context.annotation.Configuration;
 public class RagProperties {
     public int topK;
     public double similarityThreshold;
+    public boolean deletePreviousRelatedEmbeddings;
 }

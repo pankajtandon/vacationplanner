@@ -14,9 +14,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Primary;
-import org.springframework.context.annotation.Profile;
 
-@Profile("openai")
+//@Profile("openai")
 @Configuration
 public class OpenAiConfig {
 //    @Bean
@@ -43,7 +42,7 @@ public class OpenAiConfig {
     @Bean
     public ChatModel chatModel() {
         OpenAiApi openAiApi = OpenAiApi.builder()
-                .apiKey(System.getenv("OPENAI_API_KEY"))
+                .apiKey(openAiConnectionProperties.getApiKey())
                 .build();
         var openAiChatOptions = OpenAiChatOptions.builder()
                 .model(openAiChatProperties.getOptions().getModel())
