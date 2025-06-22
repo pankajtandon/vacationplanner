@@ -26,14 +26,14 @@ public class VacationService {
 
     public String planVacation(final String message, final int userSuppliedTopK) {
         UserMessage userMessage = new UserMessage(message);
-        SystemMessage systemMessage = new SystemMessage("Format the response using markdown");
-        Set<String> ragBeans = ragService.getRagCandidateFunctionNameSet(userMessage.getContent(), userSuppliedTopK);
+        SystemMessage systemMessage = new SystemMessage("Format the response using markdown. Make assumptions, without asking clarifying questions.");
+        Set<String> ragBeans = ragService.getRagCandidateFunctionNameSet(userMessage.getText(), userSuppliedTopK);
 
-        Prompt prompt = new Prompt(List.of(systemMessage, userMessage), OpenAiChatOptions.builder()
-                .withFunctions(ragBeans).build());
+        Prompt prompt = new Prompt(List.of(systemMessage, userMessage), OpenAiChatOptions.builder().toolNames()
+                .toolNames(ragBeans).build());
 
         ChatResponse response = chatModel.call(prompt);
         log.info("Returned a recommendation!");
-        return response.getResult().getOutput().getContent();
+        return response.getResult().getOutput().getText();
     }
 }

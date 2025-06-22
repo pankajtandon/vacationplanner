@@ -1,4 +1,4 @@
-Multi Dimensional Planner
+Ask Me Anything (AMA)
 ===
 
 This project demonstrates how we can use

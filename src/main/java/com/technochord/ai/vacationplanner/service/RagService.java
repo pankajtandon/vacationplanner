@@ -4,10 +4,11 @@ import com.technochord.ai.vacationplanner.config.RagCandidateSpringContext;
 import com.technochord.ai.vacationplanner.config.properties.RagProperties;
 import lombok.extern.log4j.Log4j2;
 import org.springframework.ai.document.Document;
-import org.springframework.ai.model.function.FunctionCallback;
-import org.springframework.ai.model.function.FunctionCallbackResolver;
+import org.springframework.ai.tool.function.FunctionToolCallback;
+import org.springframework.ai.tool.resolution.ToolCallbackResolver;
 import org.springframework.ai.vectorstore.SearchRequest;
 import org.springframework.ai.vectorstore.VectorStore;
+import org.springframework.ai.vectorstore.filter.FilterExpressionBuilder;
 
 import java.util.*;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -19,17 +20,17 @@ public class RagService {
 
     private VectorStore vectorStore;
 
-    private FunctionCallbackResolver functionCallbackResolver;
+    private ToolCallbackResolver toolCallbackResolver;
 
     private RagProperties ragProperties;
 
     public RagService(final RagCandidateSpringContext ragCandidateSpringContext,
                       final VectorStore vectorStore,
-                      final FunctionCallbackResolver functionCallbackResolver,
+                      final ToolCallbackResolver toolCallbackResolver,
                       final RagProperties ragProperties) {
         this.ragCandidateSpringContext = ragCandidateSpringContext;
         this.vectorStore = vectorStore;
-        this.functionCallbackResolver = functionCallbackResolver;
+        this.toolCallbackResolver = toolCallbackResolver;
         this.ragProperties = ragProperties;
     }
 
@@ -38,8 +39,8 @@ public class RagService {
         Map<String, String> functionMap = new Hashtable();
         if (ragBeans != null) {
             for (String beanName: ragBeans) {
-                FunctionCallback functionCallback = functionCallbackResolver.resolve(beanName);
-                functionMap.put(functionCallback.getName(), functionCallback.getDescription());
+                FunctionToolCallback functionCallback = (FunctionToolCallback) toolCallbackResolver.resolve(beanName);
+                functionMap.put(functionCallback.getToolDefinition().name(), functionCallback.getToolDefinition().description());
             }
         }
 
@@ -52,15 +53,27 @@ public class RagService {
 
     private Set<String> getTopKFunctionNames(final Map<String, String> functionMap, final int topK, final String query) {
 
+        //During testing, delete everything
+        FilterExpressionBuilder b = new FilterExpressionBuilder();
+        vectorStore.delete(b.eq("a", "a").build());
+
         AtomicInteger vectorizeCount = new AtomicInteger();
         //Add function metadata to vectorStore if not exist
         if (functionMap != null) {
             functionMap.keySet().stream().forEach(k -> {
-                List<Document> retrievedDocList = vectorStore.similaritySearch(SearchRequest.defaults()
-                                .withQuery(".")
-                                .withTopK(1)
-                                .withSimilarityThresholdAll()
-                                .withFilterExpression("name == '" + k + "'"));
+                List<Document> retrievedDocList = vectorStore.similaritySearch(SearchRequest.builder()
+                                .query(".")
+                                .topK(1)
+                                .similarityThresholdAll()
+                                .filterExpression("name == '" + k + "'").build());
+
+                //Temp
+                vectorStore.delete(retrievedDocList.stream().map(d -> d.getId()).toList());
+                retrievedDocList = vectorStore.similaritySearch(SearchRequest.builder()
+                        .query(".")
+                        .topK(1)
+                        .similarityThresholdAll()
+                        .filterExpression("name == '" + k + "'").build());
 
                 if (retrievedDocList == null || retrievedDocList.size() == 0) {
                     //Insert into vectorStore
@@ -77,18 +90,18 @@ public class RagService {
         }
 
         //Now retrieve the topK
-        List<Document> retrievedTopK = vectorStore.similaritySearch(SearchRequest.defaults()
-                .withQuery(query)
-                .withTopK(topK)
-                .withSimilarityThreshold(ragProperties.similarityThreshold));
+        List<Document> retrievedTopK = vectorStore.similaritySearch(SearchRequest.builder()
+                .query(query)
+                .topK(topK)
+                .similarityThreshold(ragProperties.similarityThreshold).build());
 
         if (retrievedTopK == null || retrievedTopK.size() == 0) {
             log.warn("Found no functions to support query using a similarity threshold of {}. " +
                     "Returing an empty set. Query is: {}", ragProperties.getSimilarityThreshold(), query);
             return Collections.EMPTY_SET;
         } else {
-            Double max = Collections.max(retrievedTopK.stream().map(d -> (Double) d.getMetadata().get("distance")).collect(Collectors.toList()));
-            Double min = Collections.min(retrievedTopK.stream().map(d -> (Double) d.getMetadata().get("distance")).collect(Collectors.toList()));
+            Float max = Collections.max(retrievedTopK.stream().map(d -> (Float) d.getMetadata().get("distance")).collect(Collectors.toList()));
+            Float min = Collections.min(retrievedTopK.stream().map(d -> (Float) d.getMetadata().get("distance")).collect(Collectors.toList()));
             List<String> nameList = retrievedTopK.stream().map(d -> (String) d.getMetadata().get("name")).collect(Collectors.toList());
 
             log.info("There were {} functions found that were relevant to the passed in query, with a distance range from {} to {}", nameList.size(), min, max);

@@ -17,6 +17,17 @@ spring:
     vectorstore:
       elasticsearch:
         initialize-schema: true # This creates the index for the embeddings.
+      pgvector:
+        initialize-schema: true
+        index-type: HNSW
+        distance-type: COSINE_DISTANCE
+        dimensions: 1536
+        max-document-batch-size: 10000 # Optional: Maximum number of documents per batch
+
+  datasource:
+    url: jdbc:postgresql://localhost:5432/postgres
+    username: user
+    password: password
 
   elasticsearch:
     uris: http://localhost:9200
