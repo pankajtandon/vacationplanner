@@ -1,9 +1,6 @@
 package com.technochord.ai.vacationplanner.service;
 
-import com.fasterxml.jackson.annotation.JsonClassDescription;
 import com.fasterxml.jackson.annotation.JsonInclude;
-import com.fasterxml.jackson.annotation.JsonProperty;
-import com.fasterxml.jackson.annotation.JsonPropertyDescription;
 import com.technochord.ai.vacationplanner.config.RagCandidate;
 import com.technochord.ai.vacationplanner.config.properties.FlightProperties;
 import com.technochord.ai.vacationplanner.model.Airports;
@@ -11,6 +8,8 @@ import com.technochord.ai.vacationplanner.model.FlightOffers;
 import com.technochord.ai.vacationplanner.model.TokenResponse;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.ai.tool.annotation.Tool;
+import org.springframework.ai.tool.annotation.ToolParam;
 import org.springframework.http.*;
 import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
@@ -19,10 +18,9 @@ import org.springframework.web.client.RestTemplate;
 import java.text.SimpleDateFormat;
 import java.util.Comparator;
 import java.util.Date;
-import java.util.function.Function;
 
 @RagCandidate
-public class AirfareService implements Function<AirfareService.Request, AirfareService.Response> {
+public class AirfareService {
 
     public static String GRANT_TYPE_CLIENT_CREDENTIALS = "client_credentials";
 
@@ -36,8 +34,9 @@ public class AirfareService implements Function<AirfareService.Request, AirfareS
     }
 
     private final Logger log = LoggerFactory.getLogger(AirfareService.class);
-    @Override
-    public Response apply(Request request) {
+
+    @Tool(name = "airfareService", description = "Service that computes airfare starting from the origin to the given destination")
+    public Response getAirfare(@ToolParam Request request) {
         log.info("Called AirfareService with " + request);
 
         Airports.Airport closestOriginAirport = this.getClosestAirport(request.originLatitude, request.originLongitude);
@@ -71,24 +70,16 @@ public class AirfareService implements Function<AirfareService.Request, AirfareS
     }
 
     @JsonInclude(JsonInclude.Include.NON_NULL)
-    @JsonClassDescription("Service that computes airfare starting from the origin to the given destination")
     public record Request(
-        @JsonProperty(required = true,
-                value = "origin") @JsonPropertyDescription("The city and state e.g. Pittsburgh, PA where we are flying from") String origin,
-        @JsonProperty(required = true,
-        value = "destination") @JsonPropertyDescription("The city and state e.g. San Francisco, CA where we are flying to") String destination,
-        @JsonProperty(required = true,
-            value = "currency") @JsonPropertyDescription("The currency based on the country where the origin is located.") Currency currency,
-        @JsonProperty(required = true,
-            value = "originLatitude") @JsonPropertyDescription("The latitude of the origin.") double originLatitude,
-        @JsonProperty(required = true,
-                value = "originLongitude") @JsonPropertyDescription("The longitude of the origin.") double originLongitude,
-        @JsonProperty(required = true,
-                value = "destinationLatitude") @JsonPropertyDescription("The latitude of the destination.") double destinationLatitude,
-        @JsonProperty(required = true,
-                value = "destinationLongitude") @JsonPropertyDescription("The longitude of the destination.") double destinationLongitude,
-        @JsonProperty(required = true, value = "month") @JsonPropertyDescription("The month in which the travel is desired") String month,
-        @JsonProperty(required = true, value = "year") @JsonPropertyDescription("The year in which the travel is desired") String year
+        @ToolParam(description = "The city and state e.g. Pittsburgh, PA where we are flying from", required = true) String origin,
+        @ToolParam(description = "The city and state e.g. San Francisco, CA where we are flying to", required = true) String destination,
+        @ToolParam(description = "The currency based on the country where the origin is located.", required = true) Currency currency,
+        @ToolParam(description = "The latitude of the origin.", required = true) double originLatitude,
+        @ToolParam(description = "The longitude of the origin.", required = true) double originLongitude,
+        @ToolParam(description = "The latitude of the destination.", required = true) double destinationLatitude,
+        @ToolParam(description = "The longitude of the destination.", required = true) double destinationLongitude,
+        @ToolParam(description = "The month in which the travel is desired", required = true) String month,
+        @ToolParam(description = "The year in which the travel is desired", required = true) String year
         )
     {
     }

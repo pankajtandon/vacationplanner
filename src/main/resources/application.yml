@@ -1,6 +1,7 @@
 server:
   servlet:
     context-path: /planner
+  port: 8080
 
 
 spring:
@@ -26,6 +27,20 @@ spring:
         dimensions: 1536
         max-document-batch-size: 10000 # Optional: Maximum number of documents per batch
 
+    mcp:
+      client:
+        enabled: true
+        name: planner-mcp-client
+        version: 1.0.0
+        request-timeout: 30s
+        type: SYNC
+        sse:
+          connections:
+            airbnb-mcp-server:
+              url: http://localhost:8090
+
+
+
   datasource:
     url: jdbc:postgresql://localhost:5432/postgres
     username: user
@@ -43,7 +58,7 @@ rag:
   topK: 5
   similarity-threshold: 0.1
   # Delete previously stored embeddings that are related to the embedding that is currently being processed?
-  delete-previous-related-embeddings: true
+  delete-previous-related-embeddings: false
 
 weather:
   visualcrossing:

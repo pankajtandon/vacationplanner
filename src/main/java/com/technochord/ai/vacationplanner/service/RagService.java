@@ -4,8 +4,10 @@ import com.technochord.ai.vacationplanner.config.RagCandidateSpringContext;
 import com.technochord.ai.vacationplanner.config.properties.RagProperties;
 import lombok.extern.log4j.Log4j2;
 import org.springframework.ai.document.Document;
-import org.springframework.ai.tool.function.FunctionToolCallback;
-import org.springframework.ai.tool.resolution.ToolCallbackResolver;
+import org.springframework.ai.mcp.AsyncMcpToolCallback;
+import org.springframework.ai.mcp.SyncMcpToolCallback;
+import org.springframework.ai.tool.ToolCallback;
+import org.springframework.ai.tool.method.MethodToolCallback;
 import org.springframework.ai.vectorstore.SearchRequest;
 import org.springframework.ai.vectorstore.VectorStore;
 import org.springframework.ai.vectorstore.filter.FilterExpressionBuilder;
@@ -20,30 +22,45 @@ public class RagService {
 
     private VectorStore vectorStore;
 
-    private ToolCallbackResolver toolCallbackResolver;
+    private List<ToolCallback> toolCallbackList;
+
 
     private RagProperties ragProperties;
 
     public RagService(final RagCandidateSpringContext ragCandidateSpringContext,
                       final VectorStore vectorStore,
-                      final ToolCallbackResolver toolCallbackResolver,
+                      final List<ToolCallback> toolCallbackList,
                       final RagProperties ragProperties) {
         this.ragCandidateSpringContext = ragCandidateSpringContext;
         this.vectorStore = vectorStore;
-        this.toolCallbackResolver = toolCallbackResolver;
+        this.toolCallbackList = toolCallbackList;
         this.ragProperties = ragProperties;
     }
 
     public Set<String> getRagCandidateFunctionNameSet(final String query, final Integer userSuppliedTopK) {
+        List<ToolCallback> compositeToolCallbackList = new ArrayList<>();
+        //First process RagCandidate Tools from the MethodToolCallbacks
         Set<String> ragBeans =  ragCandidateSpringContext.getRagCandidateServiceBeanNames();
+        if (toolCallbackList != null) {
+            //First get only those methodToolCallbacks that are RagCandidates
+            List<ToolCallback> methodTcList = toolCallbackList.stream()
+                    .filter(tc -> tc instanceof MethodToolCallback)
+                    .filter(tc -> ragBeans.contains(tc.getToolDefinition().name())).toList();
+            //Then add all the mcp tools anyway
+            List<ToolCallback> mcpTcList = toolCallbackList.stream().filter(tc ->
+                    (tc instanceof SyncMcpToolCallback || tc instanceof AsyncMcpToolCallback)).toList();
+            compositeToolCallbackList.addAll(methodTcList);
+            compositeToolCallbackList.addAll(mcpTcList);
+        }
         Map<String, String> functionMap = new Hashtable();
-        if (ragBeans != null) {
-            for (String beanName: ragBeans) {
-                FunctionToolCallback functionCallback = (FunctionToolCallback) toolCallbackResolver.resolve(beanName);
-                functionMap.put(functionCallback.getToolDefinition().name(), functionCallback.getToolDefinition().description());
+        if (compositeToolCallbackList != null) {
+            for (ToolCallback tc: compositeToolCallbackList) {
+                functionMap.put(tc.getToolDefinition().name(), tc.getToolDefinition().description());
             }
         }
 
+
+        //Now get the most relevant tools for the query from both the method and MCP tool set.
         Set<String> ragCandidateFunctionNameSet = getTopKFunctionNames(functionMap, Math.min(functionMap.size(),
                 ((userSuppliedTopK == null || userSuppliedTopK == 0) ?  ragProperties.getTopK() : userSuppliedTopK)), query);
 
@@ -53,7 +70,6 @@ public class RagService {
 
     private Set<String> getTopKFunctionNames(final Map<String, String> functionMap, final int topK, final String query) {
 
-        //During testing, delete everything
         FilterExpressionBuilder b = new FilterExpressionBuilder();
 
         AtomicInteger vectorizeCount = new AtomicInteger();
@@ -63,7 +79,6 @@ public class RagService {
                 List<Document> retrievedDocList = vectorStore.similaritySearch(SearchRequest.builder()
                                 .query(functionMap.get(k))
                                 .filterExpression(b.eq("name", k).build()).build());
-
                 if (ragProperties.isDeletePreviousRelatedEmbeddings() && retrievedDocList != null) {
                     //Delete this embedding
                     vectorStore.delete(retrievedDocList.stream().map(d -> d.getId()).toList());
