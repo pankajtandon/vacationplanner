@@ -20,7 +20,7 @@ budget. What dishes can you recommend so that I follow the
 ```
 
 
-![RAG + Tool Calling](images/Planner.drawio.svg)
+![RAG + Tool Calling](images/Planner.drawio.png)
 
 #### To build
 
