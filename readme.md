@@ -19,6 +19,9 @@ budget. What dishes can you recommend so that I follow the
 
 ```
 
+
+![RAG + Tool Calling](images/Planner.drawio.svg)
+
 #### To build
 
 ```
@@ -382,6 +385,163 @@ To give you an idea of the nutritional content and cost of these dishes, let's u
 20241209T160827.384 INFO  [http-nio-8080-exec-2] c.t.a.v.s.VacationService {} Returned a recommendation!
 ```
 
-In this example, note metadata from only 2 of the 5 available functions are sent to the LLM, thereby saving costs.
+In this example, note that metadata from only 2 of the 5 available functions are sent to the LLM, thereby saving costs.
 
+
+### MCP Server and Tool Calling:
+This application accesses two kinds of tools:
+- MethodTools that are annotated using the @Tool annotation and are defined in the application context
+- A spring-ai based MCP server that receives requests on port 8090
+
+For the application to work, the docker-compose.yml file brings up both the PGVector db that runs the RAG part of the solution
+and the MCP server (airbnb-mcp-server) that will need to be checked out and built (it's relative path to it's Dockerfile be specified in
+the Dockerfile of this project).
+
+##### Here are the steps:
+- Check out the `java-mcp-server-airbnb` project.
+- Build the project (`java-mcp-server-airbnb`) using `mvn clean install`.
+- Check out this project (`vacationplanner`).
+- Modify the Dockerfile path to the root of the `java-mcp-server-airbnb` project using relative path.
+- Set OPENAI_API_KEY, VISUALCROSSING_API_KEY, AMADEUS_CLIENT_ID, AMADEUS_CLIENT_SECRET from each of these websites in your env.
+- Run  ./mvnw spring-boot:run -Dspring-boot.run.jvmArguments='-Dspring.ai.openai.apiKey=${OPENAI_API_KEY} -Dweather.visualcrossing.apiKey=${VISUALCROSSING_API_KEY} -Dflight.amadeus.client-id=${AMADEUS_CLIENT_ID} -Dflight.amadeus.client-secret=${AMADEUS_CLIENT_SECRET}'
+When the server is up, you can interact with it using curl (below) on the installed host and port.
+
+
+Here's another example showing the use of MCP Tools in addtion to the existing MethodToolCallbacks:
+
+Question:
+
+```
+curl -H "content-type: application/json" -X POST http://localhost:8080/planner/query -d '{"userQuery": "In the fall of 2025, where should I fly to for a vacation in Europe where the weather is pleasant? Find me a place to stay based on medium priced properties. Note that I must stay in a property that has a coffee machine. Also find me cheap flights leaving from Pittsburgh, PA. Use the tools provided to arrive at an answer.", "userSuppliedTopKFunctions": 5}'
+```
+Response:
+```
+20250626T141133.929 INFO  [http-nio-8080-exec-1] c.t.a.v.s.RagService {} There were 6 ragCandidate beans defined in the context out of which 0 were vectorized and inserted into the vectorStore (possibly because they already existed in vector store. If you would like to re-embed these RagCandidates, then set rag.delete-previous-related-embeddings to true)
+20250626T141136.290 INFO  [http-nio-8080-exec-1] c.t.a.v.s.RagService {} There were 5 functions found that were relevant to the passed in query, with a distance range from 0.24136205 to 0.28802747
+20250626T141136.291 DEBUG [http-nio-8080-exec-1] c.t.a.v.s.RagService {} Functions metadata being sent to LLM in descending order of relevance: [airfareService, financialService, weatherService, planner_mcp_client_airbnb_mcp_server_propertiesSearch, currencyExchangeService]
+2025-06-26T18:11:39.360756Z http-nio-8080-exec-1 TRACE Log4jLoggerFactory.getContext() found anchor class org.springframework.ai.openai.metadata.support.OpenAiResponseHeaderExtractor
+2025-06-26T18:11:39.361991Z http-nio-8080-exec-1 TRACE Log4jLoggerFactory.getContext() found anchor class org.springframework.ai.chat.metadata.ChatResponseMetadata
+20250626T141139.363 DEBUG [http-nio-8080-exec-1] o.s.a.m.t.DefaultToolCallingManager {} Executing tool call: weatherService
+20250626T141139.364 DEBUG [http-nio-8080-exec-1] o.s.a.t.m.MethodToolCallback {} Starting execution of tool: weatherService
+20250626T141139.367 INFO  [http-nio-8080-exec-1] c.t.a.v.s.WeatherService {} Called WeatherService with request: Request[location=Paris, France, lat=48.8566, lon=2.3522, unit=C, month=September, year=2025]
+20250626T141139.656 INFO  [http-nio-8080-exec-1] c.t.a.v.s.WeatherService {} WeatherService returned: Response[temp=62.093548387096774, temp_min=54.62903225806452, temp_max=70.12258064516129, unit=F]
+20250626T141139.656 DEBUG [http-nio-8080-exec-1] o.s.a.t.m.MethodToolCallback {} Successful execution of tool: weatherService
+20250626T141139.657 DEBUG [http-nio-8080-exec-1] o.s.a.t.e.DefaultToolCallResultConverter {} Converting tool result to JSON.
+20250626T141139.658 DEBUG [http-nio-8080-exec-1] o.s.a.m.t.DefaultToolCallingManager {} Executing tool call: weatherService
+20250626T141139.658 DEBUG [http-nio-8080-exec-1] o.s.a.t.m.MethodToolCallback {} Starting execution of tool: weatherService
+20250626T141139.658 INFO  [http-nio-8080-exec-1] c.t.a.v.s.WeatherService {} Called WeatherService with request: Request[location=Rome, Italy, lat=41.9028, lon=12.4964, unit=C, month=September, year=2025]
+20250626T141139.751 INFO  [http-nio-8080-exec-1] c.t.a.v.s.WeatherService {} WeatherService returned: Response[temp=70.35161290322581, temp_min=60.567741935483866, temp_max=80.7709677419355, unit=F]
+20250626T141139.751 DEBUG [http-nio-8080-exec-1] o.s.a.t.m.MethodToolCallback {} Successful execution of tool: weatherService
+20250626T141139.751 DEBUG [http-nio-8080-exec-1] o.s.a.t.e.DefaultToolCallResultConverter {} Converting tool result to JSON.
+20250626T141139.752 DEBUG [http-nio-8080-exec-1] o.s.a.m.t.DefaultToolCallingManager {} Executing tool call: weatherService
+20250626T141139.752 DEBUG [http-nio-8080-exec-1] o.s.a.t.m.MethodToolCallback {} Starting execution of tool: weatherService
+20250626T141139.752 INFO  [http-nio-8080-exec-1] c.t.a.v.s.WeatherService {} Called WeatherService with request: Request[location=Madrid, Spain, lat=40.4168, lon=-3.7038, unit=C, month=September, year=2025]
+20250626T141139.860 INFO  [http-nio-8080-exec-1] c.t.a.v.s.WeatherService {} WeatherService returned: Response[temp=69.8225806451613, temp_min=58.516129032258064, temp_max=81.4483870967742, unit=F]
+20250626T141139.860 DEBUG [http-nio-8080-exec-1] o.s.a.t.m.MethodToolCallback {} Successful execution of tool: weatherService
+20250626T141139.860 DEBUG [http-nio-8080-exec-1] o.s.a.t.e.DefaultToolCallResultConverter {} Converting tool result to JSON.
+20250626T141139.861 DEBUG [http-nio-8080-exec-1] o.s.a.m.t.DefaultToolCallingManager {} Executing tool call: weatherService
+20250626T141139.861 DEBUG [http-nio-8080-exec-1] o.s.a.t.m.MethodToolCallback {} Starting execution of tool: weatherService
+20250626T141139.862 INFO  [http-nio-8080-exec-1] c.t.a.v.s.WeatherService {} Called WeatherService with request: Request[location=Berlin, Germany, lat=52.52, lon=13.405, unit=C, month=September, year=2025]
+20250626T141139.962 INFO  [http-nio-8080-exec-1] c.t.a.v.s.WeatherService {} WeatherService returned: Response[temp=59.0516129032258, temp_min=50.95161290322581, temp_max=67.41290322580646, unit=F]
+20250626T141139.963 DEBUG [http-nio-8080-exec-1] o.s.a.t.m.MethodToolCallback {} Successful execution of tool: weatherService
+20250626T141139.963 DEBUG [http-nio-8080-exec-1] o.s.a.t.e.DefaultToolCallResultConverter {} Converting tool result to JSON.
+20250626T141139.963 DEBUG [http-nio-8080-exec-1] o.s.a.m.t.DefaultToolCallingManager {} Executing tool call: weatherService
+20250626T141139.964 DEBUG [http-nio-8080-exec-1] o.s.a.t.m.MethodToolCallback {} Starting execution of tool: weatherService
+20250626T141139.964 INFO  [http-nio-8080-exec-1] c.t.a.v.s.WeatherService {} Called WeatherService with request: Request[location=London, UK, lat=51.5074, lon=-0.1278, unit=C, month=September, year=2025]
+20250626T141140.046 INFO  [http-nio-8080-exec-1] c.t.a.v.s.WeatherService {} WeatherService returned: Response[temp=61.08709677419355, temp_min=55.15161290322581, temp_max=67.87741935483871, unit=F]
+20250626T141140.046 DEBUG [http-nio-8080-exec-1] o.s.a.t.m.MethodToolCallback {} Successful execution of tool: weatherService
+20250626T141140.047 DEBUG [http-nio-8080-exec-1] o.s.a.t.e.DefaultToolCallResultConverter {} Converting tool result to JSON.
+20250626T141141.276 DEBUG [http-nio-8080-exec-1] o.s.a.m.t.DefaultToolCallingManager {} Executing tool call: airfareService
+20250626T141141.276 DEBUG [http-nio-8080-exec-1] o.s.a.t.m.MethodToolCallback {} Starting execution of tool: airfareService
+20250626T141141.283 INFO  [http-nio-8080-exec-1] c.t.a.v.s.AirfareService {} Called AirfareService with Request[origin=Pittsburgh, PA, destination=Rome, Italy, currency=USD, originLatitude=40.4406, originLongitude=-79.9959, destinationLatitude=41.9028, destinationLongitude=12.4964, month=September, year=2025]
+20250626T141146.700 INFO  [http-nio-8080-exec-1] c.t.a.v.s.AirfareService {} AirfareService response: Response[airfare=462.85, currency=EUR]
+20250626T141146.702 DEBUG [http-nio-8080-exec-1] o.s.a.t.m.MethodToolCallback {} Successful execution of tool: airfareService
+20250626T141146.702 DEBUG [http-nio-8080-exec-1] o.s.a.t.e.DefaultToolCallResultConverter {} Converting tool result to JSON.
+20250626T141147.758 DEBUG [http-nio-8080-exec-1] o.s.a.m.t.DefaultToolCallingManager {} Executing tool call: currencyExchangeService
+20250626T141147.759 DEBUG [http-nio-8080-exec-1] o.s.a.t.m.MethodToolCallback {} Starting execution of tool: currencyExchangeService
+20250626T141147.761 INFO  [http-nio-8080-exec-1] c.t.a.v.s.CurrencyExchangeService {} Called CurrencyExchangeService with Request[amount=462.85, currencyIn=EUR, currencyOut=USD]
+20250626T141148.116 INFO  [http-nio-8080-exec-1] c.t.a.v.s.CurrencyExchangeService {} CurrencyExchangeService response: Response[amount=541.303075, currencyOut=USD]
+20250626T141148.117 DEBUG [http-nio-8080-exec-1] o.s.a.t.m.MethodToolCallback {} Successful execution of tool: currencyExchangeService
+20250626T141148.118 DEBUG [http-nio-8080-exec-1] o.s.a.t.e.DefaultToolCallResultConverter {} Converting tool result to JSON.
+20250626T141149.025 DEBUG [http-nio-8080-exec-1] o.s.a.m.t.DefaultToolCallingManager {} Executing tool call: planner_mcp_client_airbnb_mcp_server_propertiesSearch
+20250626T141152.681 INFO  [http-nio-8080-exec-1] c.t.a.v.s.VacationService {} Returned a recommendation!
+20250626T141157.132 INFO  [http-nio-8080-exec-1] c.t.a.v.c.QueryController {} LLMResponse: QueryController.LLMResponse(answer=### Recommendation for Your 2025 Fall Vacation
+
+Based on the weather and cost analysis, I recommend Rome, Italy, as your destination. Here's the breakdown:
+
+---
+
+#### Weather in Rome, Italy (September 2025)
+- **Average Temperature**: 70.35°F
+- **Range**: 60.57°F to 80.77°F
+- **Weather**: Pleasant, warm, and ideal for exploring.
+
+#### Flight Details
+- **Departure**: Pittsburgh, PA
+- **Destination**: Rome, Italy
+- **Cost**: $541.30 (converted from €462.85)
+
+#### Accommodation in Rome
+Here are the medium-priced properties near the city center:
+1. **Address**: 55 Firefly  
+   - **Bedrooms**: 6  
+   - **Bathrooms**: 2  
+   - **Capacity**: 12 people  
+   - **Amenities**: Coffee machine, TV, fridge  
+   - **Rent Per Night**: $212.14  
+
+This property is the only one with a coffee machine, matching your preferences.
+
+---
+
+Would you like assistance with booking or further details?)
+
+
+```
+
+In addition to the above logs that appear on the vacationPlanner app, here are the corresponding logs from the spring-ai based MCP server:
+
+```
+20250626T141112.440 DEBUG [http-nio-8090-exec-8] o.s.w.s.FrameworkServlet {} Completed 200 OK
+20250626T141149.039 DEBUG [http-nio-8090-exec-9] o.s.c.l.LogFormatUtils {} POST "/mcp/message?sessionId=5e361b3c-3797-4abb-b1c7-7ab2a70350d6", parameters={masked}
+20250626T141149.043 DEBUG [http-nio-8090-exec-9] o.s.w.s.h.AbstractHandlerMapping {} Mapped to io.modelcontextprotocol.server.transport.WebMvcSseServerTransportProvider$$Lambda$1026/0x000000080108b5d0@262a1fad
+20250626T141149.044 DEBUG [http-nio-8090-exec-9] i.m.s.McpSchema {} Received JSON message: {"jsonrpc":"2.0","method":"tools/call","id":"4f027824-3","params":{"name":"propertiesSearch","arguments":{"zip":"00184","raidusMiles":5}}}
+20250626T141149.046 DEBUG [http-nio-8090-exec-9] i.m.s.McpServerSession {} Received request: JSONRPCRequest[jsonrpc=2.0, method=tools/call, id=4f027824-3, params={name=propertiesSearch, arguments={zip=00184, raidusMiles=5}}]
+20250626T141149.062 DEBUG [boundedElastic-2] o.s.a.t.m.MethodToolCallback {} Starting execution of tool: propertiesSearch
+20250626T141149.064 INFO  [boundedElastic-2] c.t.m.a.s.AirbnbService {} Going to search for properties in zip 00184 with a radius of 5.0
+20250626T141149.065 DEBUG [boundedElastic-2] o.s.a.t.m.MethodToolCallback {} Successful execution of tool: propertiesSearch
+20250626T141149.065 DEBUG [boundedElastic-2] o.s.a.t.e.DefaultToolCallResultConverter {} Converting tool result to JSON.
+20250626T141149.068 DEBUG [boundedElastic-2] i.m.s.t.WebMvcSseServerTransportProvider$WebMvcMcpSessionTransport {} Message sent to session 5e361b3c-3797-4abb-b1c7-7ab2a70350d6
+20250626T141149.070 DEBUG [http-nio-8090-exec-9] o.s.w.s.FrameworkServlet {} Completed 200 OK
+```
+
+Here is the formatted reponse:
+
+---
+Based on the weather and cost analysis, I recommend Rome, Italy, as your destination. Here's the breakdown:
+
+#### Weather in Rome, Italy (September 2025)
+- **Average Temperature**: 70.35°F
+- **Range**: 60.57°F to 80.77°F
+- **Weather**: Pleasant, warm, and ideal for exploring.
+
+#### Flight Details
+- **Departure**: Pittsburgh, PA
+- **Destination**: Rome, Italy
+- **Cost**: $541.30 (converted from €462.85)
+
+#### Accommodation in Rome
+Here are the medium-priced properties near the city center:
+1. **Address**: 55 Firefly
+ - **Bedrooms**: 6
+ - **Bathrooms**: 2
+ - **Capacity**: 12 people
+ - **Amenities**: Coffee machine, TV, fridge
+ - **Rent Per Night**: $212.14
+
+ This property is the only one with a coffee machine, matching your preferences.
+
+ Would you like assistance with booking or further details?)
+
+ ---
 Thus, we have combined the powerful function calling feature with the RAG technique in this application.

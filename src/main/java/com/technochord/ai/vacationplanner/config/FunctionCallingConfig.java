@@ -6,23 +6,24 @@ import com.technochord.ai.vacationplanner.config.properties.RagProperties;
 import com.technochord.ai.vacationplanner.config.properties.WeatherProperties;
 import com.technochord.ai.vacationplanner.service.*;
 import org.springframework.ai.chat.model.ChatModel;
-import org.springframework.ai.tool.resolution.ToolCallbackResolver;
+import org.springframework.ai.mcp.SyncMcpToolCallbackProvider;
+import org.springframework.ai.support.ToolCallbacks;
+import org.springframework.ai.tool.ToolCallback;
 import org.springframework.ai.vectorstore.VectorStore;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.web.client.RestTemplate;
 
-import java.util.function.Function;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
 
 @Configuration
 public class FunctionCallingConfig {
 
     @Autowired
     private ChatModel chatModel;
-
-    @Autowired
-    private ToolCallbackResolver toolCallbackResolver;
 
     @Autowired
     private RestTemplate restTemplate;
@@ -42,34 +43,61 @@ public class FunctionCallingConfig {
     @Autowired
     private VectorStore vectorStore;
 
+    @Autowired
+    private SyncMcpToolCallbackProvider syncMcpToolCallbackProvider;
+
     @Bean
-    public Function<WeatherService.Request, WeatherService.Response> weatherService() {
+    public WeatherService weatherService() {
         return new WeatherService(restTemplate, weatherProperties);
     }
 
     @Bean
-    public Function<AirfareService.Request, AirfareService.Response> airfareService() {
+    public AirfareService airfareService() {
         return new AirfareService(flightProperties, restTemplate);
     }
 
     @Bean
-    public Function<CurrencyExchangeService.Request, CurrencyExchangeService.Response> currencyExchangeService() {
+    public CurrencyExchangeService currencyExchangeService() {
         return new CurrencyExchangeService(currencyExchangeProperties, restTemplate);
     }
 
     @Bean
-    public Function<FinancialService.Request, FinancialService.Response> financialService() {
+    public FinancialService financialService() {
         return new FinancialService();
     }
 
     @Bean
-    public Function<RecipeService.Request, RecipeService.Response> recipeService() {
+    public RecipeService recipeService() {
         return new RecipeService();
+    }
+
+
+    @Bean
+    public List<ToolCallback> localTools(final WeatherService weatherService, final AirfareService airfareService,
+                                         final CurrencyExchangeService currencyExchangeService,
+                                         final FinancialService financialService,
+                                         final RecipeService recipeService) {
+        return List.of(ToolCallbacks.from(weatherService, airfareService, currencyExchangeService, financialService, recipeService));
     }
 
     @Bean
     public RagService ragService() {
-        return new RagService(ragCandidateServiceContext(), vectorStore, toolCallbackResolver, ragProperties);
+        List<ToolCallback> toolCallbackList = new ArrayList<>();
+        //First get the local functions/tools
+        List<ToolCallback> methodToolCallbackList = localTools(weatherService(), airfareService(), currencyExchangeService(),
+                financialService(), recipeService());
+        if (methodToolCallbackList != null) {
+            toolCallbackList.addAll(methodToolCallbackList);
+        }
+
+        //Next get the MCP tools...
+        ToolCallback[] mcpToolCallbackArray =  syncMcpToolCallbackProvider.getToolCallbacks();
+        if (mcpToolCallbackArray != null) {
+            toolCallbackList.addAll(Arrays.stream(mcpToolCallbackArray).toList());
+        }
+        return new RagService(ragCandidateServiceContext(), vectorStore,
+                toolCallbackList,
+                ragProperties);
     }
     @Bean
     public VacationService vacationService() {

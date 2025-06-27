@@ -1,21 +1,18 @@
 package com.technochord.ai.vacationplanner.service;
 
-import com.fasterxml.jackson.annotation.JsonClassDescription;
 import com.fasterxml.jackson.annotation.JsonInclude;
-import com.fasterxml.jackson.annotation.JsonProperty;
-import com.fasterxml.jackson.annotation.JsonPropertyDescription;
 import com.technochord.ai.vacationplanner.config.RagCandidate;
 import com.technochord.ai.vacationplanner.config.properties.CurrencyExchangeProperties;
 import com.technochord.ai.vacationplanner.model.ExchangeRates;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.ai.tool.annotation.Tool;
+import org.springframework.ai.tool.annotation.ToolParam;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.client.RestTemplate;
 
-import java.util.function.Function;
-
 @RagCandidate
-public class CurrencyExchangeService implements Function<CurrencyExchangeService.Request, CurrencyExchangeService.Response> {
+public class CurrencyExchangeService {
     private final Logger log = LoggerFactory.getLogger(CurrencyExchangeService.class);
     private CurrencyExchangeProperties currencyExchangeProperties;
 
@@ -27,8 +24,8 @@ public class CurrencyExchangeService implements Function<CurrencyExchangeService
         this.restTemplate = restTemplate;
     }
 
-    @Override
-    public Response apply(Request request) {
+    @Tool(name = "currencyExchangeService", description = "This service can be used to convert currencies from the input currency into the output currency by applying the current exchange rate. It can be used when money value is returned in a currency that is not the desired currency.")
+    public Response apply(@ToolParam Request request) {
         log.info("Called CurrencyExchangeService with " + request);
 
         double out = this.getExchange(request.currencyIn.name(), request.currencyOut.name(), request.amount);
@@ -38,15 +35,10 @@ public class CurrencyExchangeService implements Function<CurrencyExchangeService
     }
 
     @JsonInclude(JsonInclude.Include.NON_NULL)
-    @JsonClassDescription("This returns the desired airfare currency by applying the current exchange rate to the amount of airfare passed in.")
     public record Request(
-        @JsonProperty(required = true,
-            value = "amount") @JsonPropertyDescription("The amount of any given currency specified as currencyIn") double amount,
-        @JsonProperty(required = true,
-            value = "currencyIn") @JsonPropertyDescription("The currency symbol to to which the exchange rate has to be applied to") AirfareService.Currency currencyIn,
-
-        @JsonProperty(required = false,
-            value = "currencyOut") @JsonPropertyDescription("The currency symbol that the converted currency is needed in.") AirfareService.Currency currencyOut
+         @ToolParam(required = true, description = "The amount of any given currency specified as currencyIn") double amount,
+         @ToolParam(required = true, description = "The currency symbol for the input currency.") AirfareService.Currency currencyIn,
+         @ToolParam(required = true, description = "The currency symbol for the output currency.") AirfareService.Currency currencyOut
         )
     {
     }

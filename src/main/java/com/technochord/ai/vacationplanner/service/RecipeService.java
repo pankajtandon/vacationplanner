@@ -6,6 +6,8 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonPropertyDescription;
 import com.technochord.ai.vacationplanner.config.RagCandidate;
 import lombok.extern.log4j.Log4j2;
+import org.springframework.ai.tool.annotation.Tool;
+import org.springframework.ai.tool.annotation.ToolParam;
 
 import java.util.List;
 import java.util.Random;
@@ -13,13 +15,12 @@ import java.util.function.Function;
 
 @Log4j2
 @RagCandidate
-public class RecipeService implements Function<RecipeService.Request, RecipeService.Response> {
+public class RecipeService {
 
     @JsonInclude(JsonInclude.Include.NON_NULL)
-    @JsonClassDescription("Service that returns the percent of protein calories, carbs calories and fat calories, the total calories and the cost of the meal of a single serving of the named dish.")
     public record Request(
             @JsonProperty(required = true,
-                    value = "dishName") @JsonPropertyDescription("The name of the dish") String dishName)
+                    value = "dishName") @ToolParam(description = "The name of the dish") String dishName)
     {
     }
 
@@ -27,8 +28,8 @@ public class RecipeService implements Function<RecipeService.Request, RecipeServ
     {
     }
 
-    @Override
-    public RecipeService.Response apply(RecipeService.Request request) {
+    @Tool(name = "recipeService", description = "Service that returns the percent of protein calories, carbs calories and fat calories, the total calories and the cost of the meal of a single serving of the named dish.")
+    public RecipeService.Response apply(@ToolParam RecipeService.Request request) {
         log.info("Called RecipeService with " + request);
         //In a real situation, hit food APIs here.
 

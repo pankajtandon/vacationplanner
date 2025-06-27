@@ -13,6 +13,10 @@ services:
       - pgdata:/var/lib/postgresql/data # Persist data
       - ./init-pgvector.sql:/docker-entrypoint-initdb.d/init-pgvector.sql # Initialize extension
 
-
+  mcp-airbnb:
+    # Ensure that this path point to the Dockerfile of the java-mcp-server-airbnb project
+    build: ../mcp/java-mcp-server-airbnb
+    ports:
+        - "8090:8090"
 volumes:
   pgdata:
