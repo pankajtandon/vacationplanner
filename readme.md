@@ -19,6 +19,9 @@ budget. What dishes can you recommend so that I follow the
 
 ```
 
+
+![RAG + Tool Calling](https://app.diagrams.net/#G1sYI6iskhu59733kGqtGdR34WgtUv03qm#%7B%22pageId%22%3A%22_bWNelVlSfMnmmZRVmmO%22%7D)
+
 #### To build
 
 ```
@@ -385,7 +388,25 @@ To give you an idea of the nutritional content and cost of these dishes, let's u
 In this example, note that metadata from only 2 of the 5 available functions are sent to the LLM, thereby saving costs.
 
 
-#### MCP Server:
+### MCP Server and Tool Calling:
+This application accesses two kinds of tools:
+- MethodTools that are annotated using the @Tool annotation and are defined in the application context
+- A spring-ai based MCP server that receives requests on port 8090
+
+For the application to work, the docker-compose.yml file brings up both the PGVector db that runs the RAG part of the solution
+and the MCP server (airbnb-mcp-server) that will need to be checked out and built (it's relative path to it's Dockerfile be specified in
+the Dockerfile of this project).
+
+##### Here are the steps:
+- Check out the `java-mcp-server-airbnb` project.
+- Build the project (`java-mcp-server-airbnb`) using `mvn clean install`.
+- Check out this project (`vacationplanner`).
+- Modify the Dockerfile path to the root of the `java-mcp-server-airbnb` project using relative path.
+- Set OPENAI_API_KEY, VISUALCROSSING_API_KEY, AMADEUS_CLIENT_ID, AMADEUS_CLIENT_SECRET from each of these websites in your env.
+- Run  ./mvnw spring-boot:run -Dspring-boot.run.jvmArguments='-Dspring.ai.openai.apiKey=${OPENAI_API_KEY} -Dweather.visualcrossing.apiKey=${VISUALCROSSING_API_KEY} -Dflight.amadeus.client-id=${AMADEUS_CLIENT_ID} -Dflight.amadeus.client-secret=${AMADEUS_CLIENT_SECRET}'
+When the server is up, you can interact with it using curl (below) on the installed host and port.
+
+
 Here's another example showing the use of MCP Tools in addtion to the existing MethodToolCallbacks:
 
 Question:
