@@ -2,12 +2,11 @@ Planner
 ===
 
 This project demonstrates how we can use
-Spring AI's implementation of OpenAI's Function
-Calling feature along with Retrieval Augumented Generation (RAG) so that we can not only interact 
+Spring AI's implementation of OpenAI's Tool Calling feature along with Retrieval Augumented Generation (RAG) so that we can not only interact 
 with pre-trained models in a secure manner, we can also minimize the 
-tokens of function metadata sent to the LLMs.
+tokens of function metadata sent to the LLMs. It also demonstrates how to interact with a standalone MCP server.
 
-These are sample questions that this app can answer, by combining Function Calling and RAG:
+These are sample questions that this app can answer, by combining Tool Calling (local and MCP) and RAG:
 ```
 Q1. I live in Pittsburgh, PA and I love golf.
 In the fall of 2024, where should I fly to, in Europe or the United States, to play, 
@@ -25,10 +24,6 @@ have available to arrive at the answer. Also tell me which tools you used.
 
 
 ![RAG + Tool Calling](images/Planner.drawio.png)
-
-
-#### To run the test that demonstrates how function calling works
-
 
 #### Components of the app
 This app consists of:
