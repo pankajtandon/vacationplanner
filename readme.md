@@ -1,4 +1,4 @@
-Ask Me Anything (AMA)
+Planner
 ===
 
 This project demonstrates how we can use
@@ -17,6 +17,10 @@ Q2. I need to remain healthy by following a vegetarian diet and also remain unde
 budget. What dishes can you recommend so that I follow the 
 90 30 50 diet rule and such that it is also affordable over a year?
 
+Q3: I want to hike in good weather in October 2025. Where should I go, where it's pleasant, not too pricey, I can get 
+good vegetarian food and I can get a good property to stay at (with a coffee maker, preferably)? 
+I live in Pittsburgh, PA and would prefer places that have direct flights from here. Please use all the tools you 
+have available to arrive at the answer. Also tell me which tools you used.
 ```
 
 
@@ -87,7 +91,7 @@ running (`docker ps -a` should show the headings (at least) of a table listing r
 - Navigate to LISTENER_HOME and run `mvn clean install`. This will build your project and place a jar file in the target dir.
 - Navigate to PLANNER_HOME and run `mvn clean install`. This will build your project and place a jar file in the target dir.
 
-
+To run the app:
 ```agsl
 docker compose up
 ```
@@ -96,7 +100,10 @@ You can also run:
 ./mvnw spring-boot:run -Dspring-boot.run.jvmArguments='-Dspring.ai.openai.apiKey=${OPENAI_API_KEY} -Dweather.visualcrossing.apiKey=${VISUALCROSSING_API_KEY} -Dflight.amadeus.client-id=${AMADEUS_CLIENT_ID} -Dflight.amadeus.client-secret=${AMADEUS_CLIENT_SECRET}'
 ```
 
-When the app is ready to receive traffic, you should see:
+When the app is ready to receive traffic, go to http://localhost:8070 and ask your question!
+
+Since we are not streaming (yet), it may be a while before the response shows up on the screen. 
+The log output looks like this.
 
 ```
   .   ____          _            __ _ _
