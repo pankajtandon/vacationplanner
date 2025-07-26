@@ -13,7 +13,9 @@
     </Root>
     <Logger name="com.technochord" level="DEBUG"></Logger>
     <Logger name="org.springframework.ai" level="DEBUG"></Logger>
+    <Logger name="org.springframework.ai.chat.evaluation" level="TRACE"></Logger>
     <Logger name="org.springframework.ai.tool.resolution.StaticToolCallbackResolver" level="INFO"></Logger>
+
 
 </Loggers>
 

@@ -31,14 +31,7 @@ budget. What dishes can you recommend so that I follow the
 
 #### To run the test that demonstrates how function calling works
 
-Create the following environment variables in your .zshrc/bashrc:
 
-```
-export OPENAI_API_KEY=[api key (Create at https://platform.openai.com/api-keys)]
-export VIRTUALCROSSING_API_KEY=[api key (Create at https://www.visualcrossing.com/account)]
-export AMADEUS_CLIENT_ID=[api client Id (Create at https://www.accounts.amadeus.com/)]
-export AMADEUS_CLIENT_SECRET=[api client secret (Create at https://www.accounts.amadeus.com/)]
-```
 
 - Supply an API Key for OpenAI (LLM and embedding), VisualCrossing (Weather API), Amadeus (FlightService) via
 
@@ -57,45 +50,50 @@ export AMADEUS_CLIENT_SECRET=[api client secret (Create at https://www.accounts.
   returned by your custom functions.
 
 
-#### Running the webapp
-This app uses `elasticsearch` vector db for the RAG phase. (This is needed becase the much simpler file system based `SimpleVectorStore`
-implementation, does not support meta-data filtering which is needed by this example to support RAG.)
-It expects the elasticsearch db to be up on port 9200.
-The app uses `docker` to bring up elastic using `docker-compose` in the project root.
+#### Components of the app
+This app consists of:
+- VacationPlanner - This is a Spring Boot app that runs on port and exposes an endpoint that interacts with LLMs for inference and embeddings using Spring AI integration. It also contains services (@Service), some of which define metadata and can be exposed as Tools for the LLM to invoke when appropriate.
+- Airbnb MCP server - This is a Spring Boot app that implements a MCP server and exposes a service via the MCP protocol. (https://github.com/pankajtandon/airbnb-mcp-server). This runs in a Docker container.
+- A Postgres Vector db - Used to store embeddings of the query and Tool metadata during the RAG phase. This runs in Docker.
+- Good Listener UI - This is a Vaadin frontend that accepts queries and displays responses. Also runs in Docker.
 
-After you have built the project, to execute it:
+These 4 components are orchestrated using a docker-compose file (https://github.com/pankajtandon/vacationplanner/blob/main/docker-compose.yml).
 
-Use the `spring-boot-docker-compose` starter to integrate docker with the maven lifecycle.
-In this case, install `mvn` and the project source and then from the project root, execute:
+#### Running the app
+
+Create the following environment variables in your .zshrc/bashrc:
 
 ```
-./mvnw spring-boot:run -Dspring-boot.run.jvmArguments='-Dspring.ai.openai.apiKey=${OPENAI_API_KEY} -Dweather.visualcrossing.apiKey=${VISUALCROSSING_API_KEY} -Dflight.amadeus.client-id=${AMADEUS_CLIENT_ID} -Dflight.amadeus.client-secret=${AMADEUS_CLIENT_SECRET}'
+export OPENAI_API_KEY=[api key (Create at https://platform.openai.com/api-keys)]
+export VIRTUALCROSSING_API_KEY=[api key (Create at https://www.visualcrossing.com/account)]
+export AMADEUS_CLIENT_ID=[api client Id (Create at https://www.accounts.amadeus.com/)]
+export AMADEUS_CLIENT_SECRET=[api client secret (Create at https://www.accounts.amadeus.com/)]
 ```
-This automatically starts the docker containers before starting the application and also stops it when
-bringing the app down.
 
-
-If you would like to explicitly bring up the docker container, but first comment out the dependency:
+- Checkout: https://github.com/pankajtandon/vacationplanner to PLANNER_ROOT
+- Checkout: https://github.com/pankajtandon/airbnb-mcp-server to MCP_ROOT
+- Checkout https://github.com/pankajtandon/good-listener to LISTENER_ROOT
+ 
 ```agsl
-		<dependency>
-			<groupId>org.springframework.boot</groupId>
-			<artifactId>spring-boot-docker-compose</artifactId>
-			<optional>true</optional>
-		</dependency>
-```
-from the pom.xml.
-
-#### Currently this is not working on a mac and results in a 'ClassNotFoundException: javax.management.MBeanRegistration'. This is happening with
-a demo app from spring initializer also. WIP:
-
-Next bring up elastic search or PGVector docker containers explicitly 
-From the project root:
+export PLANNER_ROOT=[/path/to/where/you/checkout/project]
+export MCP_ROOT=[/path/to/where/you/checkout/project]
+export LISTENER_ROOT=[/path/to/where/you/checkout/project]
 
 ```
+- Install `mvn` and Java 17
+- Install docker on your manchine and make sure that the daemon process is 
+running (`docker ps -a` should show the headings (at least) of a table listing running containers). 
+- Navigate to the MCP_HOME and run `mvn clean install`. This will build your project and place a jar file in the target dir.
+- Navigate to LISTENER_HOME and run `mvn clean install`. This will build your project and place a jar file in the target dir.
+- Navigate to PLANNER_HOME and run `mvn clean install`. This will build your project and place a jar file in the target dir.
+
+
+```agsl
 docker compose up
-
-# When the containers are up:
-java -jar target/planner-0.0.1-SNAPSHOT.jar --spring.ai.openai.apiKey=${OPENAI_API_KEY} --weather.visualcrossing.apiKey=${VISUALCROSSING_API_KEY} --flight.amadeus.client-id=${AMADEUS_CLIENT_ID} --flight.amadeus.client-secret=${AMADEUS_CLIENT_SECRET}
+```
+You can also run:
+```agsl
+./mvnw spring-boot:run -Dspring-boot.run.jvmArguments='-Dspring.ai.openai.apiKey=${OPENAI_API_KEY} -Dweather.visualcrossing.apiKey=${VISUALCROSSING_API_KEY} -Dflight.amadeus.client-id=${AMADEUS_CLIENT_ID} -Dflight.amadeus.client-secret=${AMADEUS_CLIENT_SECRET}'
 ```
 
 When the app is ready to receive traffic, you should see:

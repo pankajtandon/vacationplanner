@@ -13,10 +13,34 @@ services:
       - pgdata:/var/lib/postgresql/data # Persist data
       - ./init-pgvector.sql:/docker-entrypoint-initdb.d/init-pgvector.sql # Initialize extension
 
-  mcp-airbnb:
-    # Ensure that this path point to the Dockerfile of the java-mcp-server-airbnb project
-    build: ../mcp/java-mcp-server-airbnb
+  ui:
+#   Ensure that this path point to the directory where the Dockerfile of the good-listener project lives.
+    build: ${LISTENER_ROOT}
     ports:
-        - "8090:8090"
+        - "8070:8070"
+    environment:
+      - backend-host=http://planner:8080
+
+  mcp-airbnb:
+    #   Ensure that this path point to the directory where the Dockerfile of the java-mcp-server-airbnb project lives.
+    #    build: ../mcp/java-mcp-server-airbnb
+    build: ${MCP_ROOT}
+    ports:
+      - "8090:8090"
+
+  planner:
+    build: .
+    ports:
+      - "8080:8080"
+    depends_on:
+      - db
+    environment:
+      - spring.ai.mcp.client.sse.connections.airbnb-mcp-server.url=http://mcp-airbnb:8090
+      - spring.datasource.url=jdbc:postgresql://db:5432/postgres
+      - spring.ai.openai.apiKey=${OPENAI_API_KEY}
+      - weather.visualcrossing.apiKey=${VISUALCROSSING_API_KEY}
+      - flight.amadeus.client-id=${AMADEUS_CLIENT_ID}
+      - flight.amadeus.client-secret=${AMADEUS_CLIENT_SECRET}
+
 volumes:
   pgdata:
