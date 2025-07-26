@@ -26,32 +26,8 @@ have available to arrive at the answer. Also tell me which tools you used.
 
 ![RAG + Tool Calling](images/Planner.drawio.png)
 
-#### To build
-
-```
-./mvnw clean install
-```
-
 
 #### To run the test that demonstrates how function calling works
-
-
-
-- Supply an API Key for OpenAI (LLM and embedding), VisualCrossing (Weather API), Amadeus (FlightService) via
-
- ```
-  -Dspring.ai.openai.apiKey=${OPENAI_API_KEY}
-  -Dweather.visualcrossing.apiKey=${VISUALCROSSING_API_KEY}
-  -Dflight.amadeus.client-id=${AMADEUS_CLIENT_ID}
-  -Dflight.amadeus.client-secret=${AMADEUS_CLIENT_SECRET}
-  ```
-- Run the test
-
-  ```
-    ./mvnw clean test
-  ```
-  You should see log output on the console that indicates how the LLM invokes your functions and infers data based on the results 
-  returned by your custom functions.
 
 
 #### Components of the app
@@ -85,8 +61,8 @@ export LISTENER_ROOT=[/path/to/where/you/checkout/project]
 
 ```
 - Install `mvn` and Java 17
-- Install docker on your manchine and make sure that the daemon process is 
-running (`docker ps -a` should show the headings (at least) of a table listing running containers). 
+- Install docker on your machine and make sure that the daemon process is running 
+(`docker ps -a` should show the headings (at least) of a table listing running containers). 
 - Navigate to the MCP_HOME and run `mvn clean install`. This will build your project and place a jar file in the target dir.
 - Navigate to LISTENER_HOME and run `mvn clean install`. This will build your project and place a jar file in the target dir.
 - Navigate to PLANNER_HOME and run `mvn clean install`. This will build your project and place a jar file in the target dir.
@@ -102,7 +78,7 @@ You can also run:
 
 When the app is ready to receive traffic, go to http://localhost:8070 and ask your question!
 
-Since we are not streaming (yet), it may be a while before the response shows up on the screen. 
+Since we are not streaming (yet), it may be a while before the response shows up in the reponse box on the screen. 
 The log output looks like this.
 
 ```
