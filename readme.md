@@ -59,7 +59,7 @@ export LISTENER_ROOT=[/path/to/where/you/checkout/project]
 - Install docker on your machine and make sure that the daemon process is running 
 (`docker ps -a` should show the headings (at least) of a table listing running containers). 
 - Navigate to the MCP_HOME and run `mvn clean install`. This will build your project and place a jar file in the target dir.
-- Navigate to LISTENER_HOME and run `mvn clean install`. This will build your project and place a jar file in the target dir.
+- Navigate to LISTENER_HOME and run `mvn clean install -Pproduction`. This will build your project and place a jar file in the target dir.
 - Navigate to PLANNER_HOME and run `mvn clean install`. This will build your project and place a jar file in the target dir.
 
 To run the app:
