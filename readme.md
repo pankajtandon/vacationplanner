@@ -62,7 +62,7 @@ export LISTENER_ROOT=[/path/to/where/you/checkout/project]
 - Navigate to LISTENER_HOME and run `mvn clean install -Pproduction`. This will build your project and place a jar file in the target dir.
 - Navigate to PLANNER_HOME and run `mvn clean install`. This will build your project and place a jar file in the target dir.
 
-To run the app:
+To run the app and all related containers, navigate to PLANNER_HOME and issue:
 ```agsl
 docker compose up
 ```
