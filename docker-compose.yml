@@ -32,9 +32,11 @@ services:
     build: .
     ports:
       - "8080:8080"
+      - "5005:5005"
     depends_on:
       - db
     environment:
+      - JAVA_TOOL_OPTIONS=-agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=*:5005
       - spring.ai.mcp.client.sse.connections.airbnb-mcp-server.url=http://mcp-airbnb:8090
       - spring.datasource.url=jdbc:postgresql://db:5432/postgres
       - spring.ai.openai.apiKey=${OPENAI_API_KEY}

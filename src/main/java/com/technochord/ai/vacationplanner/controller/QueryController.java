@@ -27,6 +27,11 @@ public class QueryController {
         return new ResponseEntity<>(llmResponse, HttpStatus.OK);
     }
 
+    @PostMapping(path = "/bogus")
+    public ResponseEntity<LLMResponse> bogus(@RequestBody Query query) {
+        return new ResponseEntity<>(null, HttpStatus.OK);
+    }
+
     @Getter
     @Setter
 

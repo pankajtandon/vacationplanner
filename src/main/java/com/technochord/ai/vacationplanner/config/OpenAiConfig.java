@@ -38,6 +38,7 @@ public class OpenAiConfig {
                 .build();
         var openAiChatOptions = OpenAiChatOptions.builder()
                 .model(openAiChatProperties.getOptions().getModel())
+                .internalToolExecutionEnabled(false)
                 .temperature(openAiChatProperties.getOptions().getTemperature())
                 //.maxTokens(200)
                 .build();
