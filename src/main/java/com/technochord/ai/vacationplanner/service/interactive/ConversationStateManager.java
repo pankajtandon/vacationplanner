@@ -1,13 +1,10 @@
 package com.technochord.ai.vacationplanner.service.interactive;
 
-import org.springframework.stereotype.Service;
-
 import java.time.Duration;
 import java.time.Instant;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
-@Service
 public class ConversationStateManager {
 
     private final Map<String, ConversationState> states = new ConcurrentHashMap<>();

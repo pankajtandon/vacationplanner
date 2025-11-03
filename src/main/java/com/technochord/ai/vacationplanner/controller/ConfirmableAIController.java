@@ -23,7 +23,7 @@ public class ConfirmableAIController {
     @PostMapping("/chat")
     public ResponseEntity<ChatResponse> chat(@RequestBody ChatRequest request) {
         try {
-            String response = chatService.chat(request.getMessage());
+            String response = chatService.chat(request.getMessage(), request.getUserSuppliedTopK());
 
             // Check if response contains confirmation request
             if (response.contains("Conversation ID:")) {
@@ -66,6 +66,7 @@ public class ConfirmableAIController {
 @Data
 class ChatRequest {
     private String message;
+    private int userSuppliedTopK;
 }
 
 @Data

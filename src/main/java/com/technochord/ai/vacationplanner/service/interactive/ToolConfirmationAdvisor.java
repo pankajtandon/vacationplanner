@@ -13,22 +13,22 @@ import org.springframework.ai.chat.model.ChatResponse;
 import org.springframework.ai.chat.model.Generation;
 import org.springframework.ai.chat.prompt.Prompt;
 import org.springframework.ai.tool.ToolCallback;
-import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
-@Service
 @Log4j2
 public class ToolConfirmationAdvisor implements CallAdvisor {
 
     private final ConversationStateManager stateManager;
+    private final List<ToolCallback> availableToolList;
     private final int order = 0; // High priority
 
-    public ToolConfirmationAdvisor(ConversationStateManager stateManager) {
+    public ToolConfirmationAdvisor(ConversationStateManager stateManager, List<ToolCallback> availableToolList) {
         this.stateManager = stateManager;
+        this.availableToolList = availableToolList;
     }
 
     @Override
@@ -108,22 +108,22 @@ public class ToolConfirmationAdvisor implements CallAdvisor {
     }
 
     private ChatClientResponse handlePendingConfirmation(
-            ChatClientRequest ChatClientRequest,
+            ChatClientRequest chatClientRequest,
             ConversationState state,
             CallAdvisorChain chain) {
 
         // Get confirmation decision from the request
-        boolean approved = extractConfirmationDecision(ChatClientRequest);
+        boolean approved = extractConfirmationDecision(chatClientRequest);
         AssistantMessage.ToolCall currentTool = state.getToolCalls().get(state.getCurrentToolIndex());
 
         if (approved) {
             // Execute the tool
-            String result = executeToolDirectly(currentTool, ChatClientRequest);
+            String result = executeToolDirectly(currentTool, chatClientRequest);
             state.getToolResults().add(new ToolExecutionResult(currentTool, result, true));
             log.info("Tool {} executed: {}", currentTool.name(), result);
         } else {
             // Skip the tool
-            String feedback = extractUserFeedback(ChatClientRequest);
+            String feedback = extractUserFeedback(chatClientRequest);
             state.getToolResults().add(new ToolExecutionResult(
                     currentTool,
                     "Skipped by user" + (feedback != null ? ": " + feedback : ""),
@@ -140,12 +140,12 @@ public class ToolConfirmationAdvisor implements CallAdvisor {
             // More tools to confirm
             stateManager.updateState(state);
             ChatResponse nextConfirmation = createConfirmationResponse(state);
-            return new ChatClientResponse(nextConfirmation, ChatClientRequest.context());
+            return new ChatClientResponse(nextConfirmation, chatClientRequest.context());
         } else {
             // All tools processed, generate final response
             state.setPendingConfirmation(false);
             stateManager.updateState(state);
-            return generateFinalResponseWithAdvisor(state, ChatClientRequest, chain);
+            return generateFinalResponseWithAdvisor(state, chatClientRequest, chain);
         }
     }
 
@@ -153,11 +153,13 @@ public class ToolConfirmationAdvisor implements CallAdvisor {
             AssistantMessage.ToolCall toolCall,
             ChatClientRequest ChatClientRequest) {
 
-        // Get the function callback from the request's function callbacks
-        Map<String, ToolCallback> functionCallbacks = (Map<String, ToolCallback>)ChatClientRequest.context()
-                .get("spring.ai.chat.client.function.callbacks");
 
-        ToolCallback callback = functionCallbacks.get(toolCall.name());
+        // Get the function callback from the request's function callbacks
+
+
+
+        ToolCallback callback = availableToolList.stream().filter(tc -> tc.getToolDefinition().name().equals(toolCall.name())
+        ).findFirst().orElse(null);
         if (callback != null) {
             try {
                 return callback.call(toolCall.arguments());
