@@ -47,7 +47,7 @@ public class ToolConfirmationAdvisor implements CallAdvisor {
 
         // Check if this is a continuation of a conversation with pending tool confirmations
         String conversationId = extractConversationId(chatClientRequest);
-
+        log.debug("Retrieved conversationId {}", conversationId);
         if (conversationId != null) {
             ConversationState state = stateManager.getState(conversationId);
             if (state != null && state.isPendingConfirmation()) {
@@ -58,7 +58,7 @@ public class ToolConfirmationAdvisor implements CallAdvisor {
 
         // First pass - let LLM determine what tools it wants to use
         ChatClientResponse response = chain.nextCall(chatClientRequest);
-
+        log.debug("Retrieved response after processing ToolConfirmationAdvisor: {}", response);
         // Check if response has tool calls
         if (hasToolCalls(response)) {
             // Intercept and request user confirmation
@@ -113,6 +113,7 @@ public class ToolConfirmationAdvisor implements CallAdvisor {
             CallAdvisorChain chain) {
 
         // Get confirmation decision from the request
+        log.debug("Handling confirmation request with conversationId {}", state.getConversationId());
         boolean approved = extractConfirmationDecision(chatClientRequest);
         AssistantMessage.ToolCall currentTool = state.getToolCalls().get(state.getCurrentToolIndex());
 
@@ -176,7 +177,7 @@ public class ToolConfirmationAdvisor implements CallAdvisor {
         AssistantMessage.ToolCall currentTool = state.getToolCalls().get(state.getCurrentToolIndex());
 
         String confirmationMessage = String.format("""
-            🤖 Tool Confirmation Required
+            Tool Confirmation Required
             
             Tool %d of %d: %s
             
@@ -217,7 +218,7 @@ public class ToolConfirmationAdvisor implements CallAdvisor {
             context.append(String.format("- %s: %s (executed: %s)\n",
                     result.getToolCall().name(),
                     result.getResult(),
-                    result.isExecuted() ? "✅" : "❌"
+                    result.isExecuted() ? "Y" : "N"
             ));
         }
 
@@ -238,9 +239,9 @@ public class ToolConfirmationAdvisor implements CallAdvisor {
         // Create new advised request without tool confirmation context
         ChatClientRequest finalRequest = chatClientRequest.builder()
                 .prompt(new Prompt(finalPrompt))
-                .context(Map.of("SKIP_TOOL_CONFIRMATION", true)) //PT: Confirm
+                .context(Map.of("SKIP_TOOL_CONFIRMATION", true))
                 .build();
-
+        log.debug("Final request: " + finalRequest);
         // Clean up state
         stateManager.deleteState(state.getConversationId());
 
@@ -311,7 +312,7 @@ public class ToolConfirmationAdvisor implements CallAdvisor {
         StringBuilder sb = new StringBuilder();
         for (ToolExecutionResult result : results) {
             sb.append(String.format("  %s %s: %s\n",
-                    result.isExecuted() ? "✅" : "❌",
+                    result.isExecuted() ? "Y" : "N",
                     result.getToolCall().name(),
                     result.getResult()
             ));

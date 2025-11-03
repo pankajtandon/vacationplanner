@@ -47,7 +47,7 @@ public class ConfirmableToolChatService {
                 .advisors(advisorSpec -> advisorSpec
                         .param("conversationId", conversationId)
                         .param("approved", approved)
-                        .param("feedback", feedback))
+                        .param("feedback", (feedback == null ? "none" : feedback)))
                 .call()
                 .content();
     }
