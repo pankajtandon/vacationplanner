@@ -1,7 +1,7 @@
 Planner
 ===
 
-This project demonstrates how we can use Spring AI's implementation ofcTool Calling feature along with Retrieval Augumented Generation (RAG) so that we can not only interact 
+This project demonstrates how we can use Spring AI's implementation of the `Tool Calling` feature along with `Retrieval Augumented Generation` (RAG) so that we can not only interact 
 with pre-trained models in a secure manner, we can also minimize the 
 tokens of function metadata sent to the LLMs. It also demonstrates how to interact with a standalone MCP server.
 
@@ -26,7 +26,7 @@ This app consists of:
 
 These 4 components are orchestrated using a docker-compose file (https://github.com/pankajtandon/vacationplanner/blob/main/docker-compose.yml).
 
-#### Running the app
+#### Running the app locally
 
 Create the following environment variables in your .zshrc/bashrc:
 
@@ -56,12 +56,13 @@ export LISTENER_ROOT=[/path/to/where/you/checkout/project]
 
 To run the app and all related containers, navigate to PLANNER_HOME and first build the Docker images of all services:
 ```agsl
-docker compose build
+`docker compose -f ${PLANNER_ROOT}/docker-compose.yml build`
 ```
 Next run all the apps:
 ```agsl
 docker compose -f ${PLANNER_ROOT}/docker-compose.yml up
 ```
+
 or, if you are in $PLANNER_ROOT, simple run
 ```arm
 docker compose up
@@ -89,18 +90,8 @@ This application accesses two kinds of tools:
 - MCPServerTools: A spring-ai based MCP server that receives requests on port 8090
 
 
-
-
-##### Here are the steps:
-- Check out the `java-mcp-server-airbnb` project.
-- Build the project (`java-mcp-server-airbnb`) using `mvn clean install`.
-- Check out this project (`vacationplanner`).
-- Modify the Dockerfile path to the root of the `java-mcp-server-airbnb` project using relative path.
-- Set OPENAI_API_KEY, VISUALCROSSING_API_KEY, AMADEUS_CLIENT_ID, AMADEUS_CLIENT_SECRET from each of these websites in your env.
-- Run  ./mvnw spring-boot:run -Dspring-boot.run.jvmArguments='-Dspring.ai.openai.apiKey=${OPENAI_API_KEY} -Dweather.visualcrossing.apiKey=${VISUALCROSSING_API_KEY} -Dflight.amadeus.client-id=${AMADEUS_CLIENT_ID} -Dflight.amadeus.client-secret=${AMADEUS_CLIENT_SECRET}'
-When the server is up, you can interact with it using curl (below) on the installed host and port.
-
-Here are some screen shots of the UI. Note that the RAG metadata and LLM invoked tools in each of these interactions:
+### Screen shots
+Here are some screen shots of the UI. Note the differnce between the RAG based selection of tools vs the tools that the LLM invokes in each of these interactions:
 1. 
 ![Golf Outing](images/planner-ui-golf.png)
 2.
@@ -108,4 +99,4 @@ Here are some screen shots of the UI. Note that the RAG metadata and LLM invoked
 3.
 ![Hiking](images/planner-ui-hike.png)
 
-Thus, we have combined the powerful function calling feature with the RAG technique in this application.
+Thus, we have combined the powerful Tool calling feature with the RAG technique in this application.
