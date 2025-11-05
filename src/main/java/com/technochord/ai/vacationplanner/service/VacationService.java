@@ -11,6 +11,7 @@ import org.springframework.ai.openai.OpenAiChatOptions;
 import java.util.List;
 import java.util.Set;
 
+@Deprecated //delete
 @Log4j2
 public class VacationService {
 

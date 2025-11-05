@@ -12,7 +12,7 @@
 	<artifactId>planner</artifactId>
 	<version>0.0.1-SNAPSHOT</version>
 	<name>vacationplanner</name>
-	<description>Demo project for Spring AI - Function Calling feature (OpenAI)</description>
+	<description>Demo project for Spring AI - Tool Calling feature</description>
 	<properties>
 		<java.version>21</java.version>
 		<spring.ai.version>1.0.3</spring.ai.version>
@@ -67,6 +67,21 @@
 				</exclusion>
 			</exclusions>
 		</dependency>
+<!-- See comment on AnthropicConfig class -->
+        <!--        <dependency>-->
+<!--            <groupId>org.springframework.ai</groupId>-->
+<!--            <artifactId>spring-ai-starter-model-anthropic</artifactId>-->
+<!--            <exclusions>-->
+<!--                <exclusion>-->
+<!--                    <groupId>ch.qos.logback</groupId>-->
+<!--                    <artifactId>logback-core</artifactId>-->
+<!--                </exclusion>-->
+<!--                <exclusion>-->
+<!--                    <groupId>org.apache.logging.log4j</groupId>-->
+<!--                    <artifactId>log4j-to-slf4j</artifactId>-->
+<!--                </exclusion>-->
+<!--            </exclusions>-->
+<!--        </dependency>-->
 		<dependency>
 			<groupId>org.springframework.boot</groupId>
 			<artifactId>spring-boot-starter-log4j2</artifactId>

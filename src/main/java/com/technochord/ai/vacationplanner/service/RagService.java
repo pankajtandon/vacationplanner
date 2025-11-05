@@ -65,6 +65,7 @@ public class RagService {
         Set<String> ragCandidateFunctionNameSet = getTopKFunctionNames(functionMap, Math.min(functionMap.size(),
                 ((userSuppliedTopK == null || userSuppliedTopK == 0) ?  ragProperties.getTopK() : userSuppliedTopK)), query);
 
+        log.info("Found a total of {} ragCandidates!", ragCandidateFunctionNameSet.size());
         return ragCandidateFunctionNameSet;
     }
 

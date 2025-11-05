@@ -8,9 +8,10 @@ import com.technochord.ai.vacationplanner.service.*;
 import com.technochord.ai.vacationplanner.service.interactive.ConfirmableToolChatService;
 import com.technochord.ai.vacationplanner.service.interactive.ConversationStateManager;
 import com.technochord.ai.vacationplanner.service.interactive.ToolConfirmationAdvisor;
+import lombok.extern.log4j.Log4j2;
 import org.springframework.ai.chat.client.ChatClient;
-import org.springframework.ai.chat.model.ChatModel;
 import org.springframework.ai.mcp.SyncMcpToolCallbackProvider;
+import org.springframework.ai.openai.OpenAiChatModel;
 import org.springframework.ai.support.ToolCallbacks;
 import org.springframework.ai.tool.ToolCallback;
 import org.springframework.ai.vectorstore.VectorStore;
@@ -24,13 +25,12 @@ import java.util.Arrays;
 import java.util.List;
 
 @Configuration
+@Log4j2
 public class FunctionCallingConfig {
 
     @Autowired
-    private ChatModel chatModel;
+    private OpenAiChatModel openAiChatModel;
 
-    @Autowired
-    private ChatClient.Builder chatClientBuilder;
 
     @Autowired
     private RestTemplate restTemplate;
@@ -99,6 +99,7 @@ public class FunctionCallingConfig {
         if (mcpToolCallbackArray != null) {
             toolCallbackList.addAll(Arrays.stream(mcpToolCallbackArray).toList());
         }
+        log.info("Found a total of {} tools", toolCallbackList.size());
         return toolCallbackList;
     }
 
@@ -108,15 +109,29 @@ public class FunctionCallingConfig {
                 availableToolList(weatherService(), airfareService(), currencyExchangeService(), financialService(), recipeService()),
                 ragProperties);
     }
-    @Bean
-    public VacationService vacationService() {
-        return new VacationService(chatModel, ragService());
-    }
 
     @Bean
     public RagCandidateSpringContext ragCandidateServiceContext() {
         return new RagCandidateSpringContext();
     }
+
+    @Bean
+    public ChatClient openAiChatClient() {
+        return ChatClient.builder(openAiChatModel)
+                .defaultAdvisors(List.of(toolConfirmationAdvisor()))
+                .defaultToolCallbacks(availableToolList(weatherService(), airfareService(), currencyExchangeService(), financialService(), recipeService()))
+                .build();
+    }
+
+// See comment on AnthropicConfig class
+//    @Bean
+//    public ChatClient anthropicChatClient() {
+//        return ChatClient.builder(anthropicChatModel)
+//                .defaultAdvisors(List.of(toolConfirmationAdvisor()))
+//                .defaultToolCallbacks(availableToolList(weatherService(), airfareService(), currencyExchangeService(), financialService(), recipeService()))
+//                .defaultOptions(AnthropicChatOptions.builder().maxTokens(anthropicChatProperties.getOptions().getMaxTokens()).build())
+//                .build();
+//    }
 
     @Bean
     public ConversationStateManager conversationStateManager() {
@@ -129,10 +144,7 @@ public class FunctionCallingConfig {
     }
     @Bean
     public ConfirmableToolChatService confirmableToolChatService() {
-        return new ConfirmableToolChatService(chatClientBuilder, toolConfirmationAdvisor(),
-                availableToolList(weatherService(), airfareService(), currencyExchangeService(), financialService(), recipeService()),
-                ragService(),
-                ragProperties
-        );
+        //return new ConfirmableToolChatService(openAiChatClient(), anthropicChatClient(), ragService(), ragProperties);
+        return new ConfirmableToolChatService(openAiChatClient(), ragService(), ragProperties);
     }
 }

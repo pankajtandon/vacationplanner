@@ -119,7 +119,7 @@ public class ToolConfirmationAdvisor implements CallAdvisor {
 
         if (approved) {
             // Execute the tool
-            String result = executeToolDirectly(currentTool, chatClientRequest);
+            String result = executeToolDirectly(currentTool);
             state.getToolResults().add(new ToolExecutionResult(currentTool, result, true));
             log.info("Tool {} executed: {}", currentTool.name(), result);
         } else {
@@ -127,7 +127,8 @@ public class ToolConfirmationAdvisor implements CallAdvisor {
             String feedback = extractUserFeedback(chatClientRequest);
             state.getToolResults().add(new ToolExecutionResult(
                     currentTool,
-                    "Skipped by user" + (feedback != null ? ": " + feedback : ""),
+                    "Skipped by user" +
+                            (feedback != null ? ": " + feedback : ""),
                     false
             ));
             log.info("Tool {} skipped by user", currentTool.name());
@@ -150,17 +151,9 @@ public class ToolConfirmationAdvisor implements CallAdvisor {
         }
     }
 
-    private String executeToolDirectly(
-            AssistantMessage.ToolCall toolCall,
-            ChatClientRequest ChatClientRequest) {
-
-
-        // Get the function callback from the request's function callbacks
-
-
-
-        ToolCallback callback = availableToolList.stream().filter(tc -> tc.getToolDefinition().name().equals(toolCall.name())
-        ).findFirst().orElse(null);
+    private String executeToolDirectly(AssistantMessage.ToolCall toolCall) {
+        ToolCallback callback = availableToolList.stream().filter(tc -> tc.getToolDefinition()
+                .name().equals(toolCall.name())).findFirst().orElse(null);
         if (callback != null) {
             try {
                 return callback.call(toolCall.arguments());
@@ -178,17 +171,12 @@ public class ToolConfirmationAdvisor implements CallAdvisor {
 
         String confirmationMessage = String.format("""
             Tool Confirmation Required
-            
             Tool %d of %d: %s
-            
             Arguments:
             %s
-            
             Previous Results:
             %s
-            
             Do you want to execute this tool?
-            
             [Conversation ID: %s]
             """,
                 state.getCurrentToolIndex() + 1,
@@ -199,7 +187,7 @@ public class ToolConfirmationAdvisor implements CallAdvisor {
                 state.getConversationId()
         );
 
-        AssistantMessage message = new AssistantMessage(confirmationMessage);
+        AssistantMessage message = new AssistantMessage(confirmationMessage, state.getOriginalResponse().context(), state.getToolCalls());
         Generation generation = new Generation(message);
         ChatResponse response = new ChatResponse(List.of(generation));
 
@@ -226,9 +214,7 @@ public class ToolConfirmationAdvisor implements CallAdvisor {
         String originalUserMessage = extractOriginalUserMessage(state.getOriginalRequest());
         String finalPrompt = String.format("""
             Original request: %s
-            
             %s
-            
             Based on the tool execution results, provide a comprehensive response.
             Acknowledge any skipped tools and work with the available information.
             """,

@@ -6,17 +6,30 @@ server:
 
 spring:
   ai:
+# Causing a lot of grief. AutoConfig is configuring tool calling that manual config is not able to replicate.
+#    chat:
+#      client:
+#        enabled: false # Supporting multiple chatModels so disable auto config
     openai:
       api-key: <passed from CLI>
       chat:
         options:
           # model: gpt-4o # meh
           # model: gpt-4o-mini - no significant improvement over gpt-4-0125-preview
-          model: gpt-4o-2024-11-20 # - Best performance
+          #model: gpt-4o-2024-11-20 # - Best performance Jul 2025
+          model: gpt-5-nano #
           # model: o1-preview - does not support FC
-          temperature: 0.7
+          temperature: 1.0
       embedding:
         enabled: true
+# See comment on AnthropicConfig class
+#    anthropic:
+#      api-key: ${ANTHROPIC_API_KEY}
+#      chat:
+#        options:
+#          model: claude-haiku-4-5
+#          temperature: 0.7
+#          max-tokens: 4000
     vectorstore:
       elasticsearch:
         initialize-schema: true # This creates the index for the embeddings.
@@ -39,18 +52,6 @@ spring:
             airbnb-mcp-server:
               url: http://localhost:8090
 
-#    mcp:
-#      client:
-#        sync:
-#        enabled: true
-#        name: planner-mcp-client
-#        version: 1.0.0
-#        request-timeout: 30s
-#        type: SYNC
-#        sse:
-#          connections:
-#            airbnb-mcp-server:
-#              url: http://localhost:8090
   datasource:
     url: jdbc:postgresql://localhost:5432/postgres
     username: user
