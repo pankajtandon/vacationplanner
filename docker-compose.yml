@@ -29,7 +29,7 @@ services:
       - "8090:8090"
 
   planner:
-    build: .
+    build: ${PLANNER_ROOT}
     ports:
       - "8080:8080"
       - "5005:5005"
