@@ -3,6 +3,8 @@ package com.technochord.ai.vacationplanner.model.interactive;
 import lombok.Data;
 
 @Data
-class ChatRequest {
+public class PlannerChatRequest {
     private String message;
+    private int userSuppliedTopK;
+    private String modelName;
 }

@@ -1,34 +1,35 @@
 package com.technochord.ai.vacationplanner.model.interactive;
 
+import io.micrometer.common.util.StringUtils;
 import lombok.Builder;
 import lombok.Data;
+import org.springframework.ai.chat.messages.AssistantMessage;
+
+import java.util.List;
 
 @Data
 @Builder
-class ChatResponse {
+public class PlannerChatResponse {
     private String response;
     private boolean needsConfirmation;
     private String conversationId;
     private String error;
+    private List<String> relevantToolList;
+    private List<AssistantMessage.ToolCall> toolCallList;
 
-    public static ChatResponse confirmationNeeded(String response) {
+    public static PlannerChatResponse buildResponse(String response, List<AssistantMessage.ToolCall> toolCallList, List<String> relevantToolNameList) {
         String convId = extractConversationId(response);
-        return ChatResponse.builder()
+        return PlannerChatResponse.builder()
                 .response(response)
-                .needsConfirmation(true)
+                .needsConfirmation((StringUtils.isEmpty(convId) ? false : true))
                 .conversationId(convId)
+                .toolCallList(toolCallList)
+                .relevantToolList(relevantToolNameList)
                 .build();
     }
 
-    public static ChatResponse finalResponse(String response) {
-        return ChatResponse.builder()
-                .response(response)
-                .needsConfirmation(false)
-                .build();
-    }
-
-    public static ChatResponse error(String error) {
-        return ChatResponse.builder()
+    public static PlannerChatResponse error(String error) {
+        return PlannerChatResponse.builder()
                 .error(error)
                 .build();
     }

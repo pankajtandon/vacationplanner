@@ -47,7 +47,6 @@ public class ToolConfirmationAdvisor implements CallAdvisor {
 
         // Check if this is a continuation of a conversation with pending tool confirmations
         String conversationId = extractConversationId(chatClientRequest);
-        log.debug("Retrieved conversationId {}", conversationId);
         if (conversationId != null) {
             ConversationState state = stateManager.getState(conversationId);
             if (state != null && state.isPendingConfirmation()) {
@@ -190,7 +189,7 @@ public class ToolConfirmationAdvisor implements CallAdvisor {
         AssistantMessage message = new AssistantMessage(confirmationMessage, state.getOriginalResponse().context(), state.getToolCalls());
         Generation generation = new Generation(message);
         ChatResponse response = new ChatResponse(List.of(generation));
-
+        log.debug("Confirmation response from advisor: " + response);
         return response;
     }
 

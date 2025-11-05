@@ -1,13 +1,14 @@
 package com.technochord.ai.vacationplanner.service.interactive;
 
 import com.technochord.ai.vacationplanner.config.properties.RagProperties;
+import com.technochord.ai.vacationplanner.model.interactive.PlannerChatResponse;
 import com.technochord.ai.vacationplanner.service.RagService;
 import lombok.extern.log4j.Log4j2;
 import org.springframework.ai.chat.client.ChatClient;
-import org.springframework.ai.chat.client.ChatClientResponse;
 import org.springframework.ai.chat.model.ChatResponse;
 import org.springframework.ai.chat.prompt.ChatOptions;
 
+import java.util.ArrayList;
 import java.util.Set;
 
 @Log4j2
@@ -31,7 +32,7 @@ public class ConfirmableToolChatService {
 
     }
 
-    public ChatResponse chat(String userMessage, int userSuppliedTopK, String modelName) throws  Exception {
+    public PlannerChatResponse chat(String userMessage, int userSuppliedTopK, String modelName) throws  Exception {
         log.info("Model being used is " + modelName);
         Set<String> relevantToolNameList = this.ragService.getRagCandidateFunctionNameSet(userMessage,
                 userSuppliedTopK == 0 ? ragProperties.topK : userSuppliedTopK);
@@ -43,7 +44,7 @@ public class ConfirmableToolChatService {
             } else {
                 runtimeChatOptions = ChatOptions.builder().model(modelName).build();
             }
-            return openAiChatClient.prompt()
+            ChatResponse chatResponse =  openAiChatClient.prompt()
                     .user(userMessage)
                     .system(SYSTEM_MESSAGE)
                     .toolNames(relevantToolNameList.toArray(new String[0]))
@@ -51,7 +52,19 @@ public class ConfirmableToolChatService {
                     //.options(runtimeChatOptions)
                     .call()
                     .chatResponse();
-                    //.content();
+            log.debug("Response in service " + chatResponse);
+
+            PlannerChatResponse plannerChatResponse = null;
+            if (chatResponse.getResults() != null && chatResponse.getResults().get(0) != null
+                    && chatResponse.getResults().size() > 0
+                    && chatResponse.getResults().get(0).getOutput() != null) {
+                plannerChatResponse = PlannerChatResponse.buildResponse(chatResponse.getResults().get(0).getOutput().getText(),
+                        chatResponse.getResults().get(0).getOutput().getToolCalls(), new ArrayList<>(relevantToolNameList));
+            }
+
+            log.debug("PlannerChatResponse in service " + plannerChatResponse);
+            return plannerChatResponse;
+
         } else if (determineModelProvider(modelName) == ModelProvider.ANTHROPIC) {
 // See comment on AnthropicConfig class
 //            return anthropicChatClient.prompt()
