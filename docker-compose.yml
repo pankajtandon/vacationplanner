@@ -1,5 +1,3 @@
-version: '3.8'
-
 services:
   db:
     image: pgvector/pgvector:pg16 # Using a pre-built image with pgvector
@@ -29,15 +27,18 @@ services:
       - "8090:8090"
 
   planner:
-    build: .
+    build: ${PLANNER_ROOT}
     ports:
       - "8080:8080"
+      - "5005:5005"
     depends_on:
       - db
     environment:
+      - JAVA_TOOL_OPTIONS=-agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=*:5005
       - spring.ai.mcp.client.sse.connections.airbnb-mcp-server.url=http://mcp-airbnb:8090
       - spring.datasource.url=jdbc:postgresql://db:5432/postgres
       - spring.ai.openai.apiKey=${OPENAI_API_KEY}
+      - spring.ai.anthropic.apiKey=${ANTHROPIC_API_KEY}
       - weather.visualcrossing.apiKey=${VISUALCROSSING_API_KEY}
       - flight.amadeus.client-id=${AMADEUS_CLIENT_ID}
       - flight.amadeus.client-secret=${AMADEUS_CLIENT_SECRET}

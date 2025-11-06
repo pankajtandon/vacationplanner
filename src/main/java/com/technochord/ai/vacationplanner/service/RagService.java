@@ -22,32 +22,33 @@ public class RagService {
 
     private VectorStore vectorStore;
 
-    private List<ToolCallback> toolCallbackList;
+    private List<ToolCallback> availableToolCallbackList;
 
 
     private RagProperties ragProperties;
 
     public RagService(final RagCandidateSpringContext ragCandidateSpringContext,
                       final VectorStore vectorStore,
-                      final List<ToolCallback> toolCallbackList,
+                      final List<ToolCallback> availableToolCallbackList,
                       final RagProperties ragProperties) {
         this.ragCandidateSpringContext = ragCandidateSpringContext;
         this.vectorStore = vectorStore;
-        this.toolCallbackList = toolCallbackList;
+        this.availableToolCallbackList = availableToolCallbackList;
         this.ragProperties = ragProperties;
     }
 
     public Set<String> getRagCandidateFunctionNameSet(final String query, final Integer userSuppliedTopK) {
         List<ToolCallback> compositeToolCallbackList = new ArrayList<>();
-        //First process RagCandidate Tools from the MethodToolCallbacks
+
+        //First get the RagCandidate Tools from the all the available tools
         Set<String> ragBeans =  ragCandidateSpringContext.getRagCandidateServiceBeanNames();
-        if (toolCallbackList != null) {
+        if (availableToolCallbackList != null) {
             //First get only those methodToolCallbacks that are RagCandidates
-            List<ToolCallback> methodTcList = toolCallbackList.stream()
+            List<ToolCallback> methodTcList = availableToolCallbackList.stream()
                     .filter(tc -> tc instanceof MethodToolCallback)
                     .filter(tc -> ragBeans.contains(tc.getToolDefinition().name())).toList();
-            //Then add all the mcp tools anyway
-            List<ToolCallback> mcpTcList = toolCallbackList.stream().filter(tc ->
+            //Then add all the mcp tools anyway because they are not and cannot be annotated with @RagCandidate
+            List<ToolCallback> mcpTcList = availableToolCallbackList.stream().filter(tc ->
                     (tc instanceof SyncMcpToolCallback || tc instanceof AsyncMcpToolCallback)).toList();
             compositeToolCallbackList.addAll(methodTcList);
             compositeToolCallbackList.addAll(mcpTcList);
@@ -64,6 +65,7 @@ public class RagService {
         Set<String> ragCandidateFunctionNameSet = getTopKFunctionNames(functionMap, Math.min(functionMap.size(),
                 ((userSuppliedTopK == null || userSuppliedTopK == 0) ?  ragProperties.getTopK() : userSuppliedTopK)), query);
 
+        log.info("Found a total of {} ragCandidates!", ragCandidateFunctionNameSet.size());
         return ragCandidateFunctionNameSet;
     }
 
