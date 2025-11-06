@@ -19,10 +19,10 @@ Q3: I want to hike in good weather in October 2026. Where should I go, where it'
 
 #### Components of the app
 This app consists of:
-- Planner - This is a Spring Boot app that runs on port and exposes an endpoint that interacts with LLMs for inference and embeddings using Spring AI integration. It also contains services (@Service), some of which define metadata and can be exposed as Tools for the LLM to invoke when appropriate. This runs in a Docker container.
-- Airbnb MCP server - This is a Spring Boot app that implements a MCP server and exposes a service via the MCP protocol. (https://github.com/pankajtandon/airbnb-mcp-server). This runs in a Docker container.
-- A Postgres Vector db - Used to store embeddings of the query and Tool metadata during the RAG phase. This runs in Docker.
-- Good Listener UI - This is a Vaadin frontend that accepts queries and displays responses. Also runs in Docker.
+- **Planner** - This is a Spring Boot app that runs on port and exposes an endpoint that interacts with LLMs for inference and embeddings using Spring AI integration. It also contains services (@Service), some of which define metadata and can be exposed as Tools for the LLM to invoke when appropriate. (https://github.com/pankajtandon/vacationplanner) This runs in a Docker container.
+- **Airbnb MCP server** - This is a Spring Boot app that implements an MCP server and exposes a service via the MCP protocol. (https://github.com/pankajtandon/airbnb-mcp-server). This runs in a Docker container.
+- **A Postgres Vector db** - OOB image used to store embeddings of the query and Tool metadata during the RAG phase. This runs in Docker.
+- **Good Listener UI** - This is a Vaadin frontend that accepts queries and displays responses. (https://github.com/pankajtandon/airbnb-mcp-server) Also runs in Docker.
 
 These 4 components are orchestrated using a docker-compose file (https://github.com/pankajtandon/vacationplanner/blob/main/docker-compose.yml).
 
@@ -32,7 +32,7 @@ Create the following environment variables in your .zshrc/bashrc:
 
 ```
 export OPENAI_API_KEY=[api key (Create at https://platform.openai.com/api-keys)]
-export VIRTUALCROSSING_API_KEY=[api key (Create at https://www.visualcrossing.com/account)]
+export VISUALCROSSING_API_KEY=[api key (Create at https://www.visualcrossing.com/account)]
 export AMADEUS_CLIENT_ID=[api client Id (Create at https://www.accounts.amadeus.com/)]
 export AMADEUS_CLIENT_SECRET=[api client secret (Create at https://www.accounts.amadeus.com/)]
 ```
@@ -50,9 +50,9 @@ export LISTENER_ROOT=[/path/to/where/you/checkout/project]
 - Install `mvn` and Java 21
 - Install docker on your machine and make sure that the daemon process is running 
 (`docker ps -a` should show the headings (at least) of a table listing running containers). 
-- Navigate to the MCP_HOME and run `mvn clean install`. This will build your project and place a jar file in the target dir.
-- Navigate to LISTENER_HOME and run `mvn clean install -Pproduction`. This will build your project and place a jar file in the target dir.
-- Navigate to PLANNER_HOME and run `mvn clean install`. This will build your project and place a jar file in the target dir.
+- Navigate to the MCP_ROOT and run `mvn clean install`. This will build your project and place a jar file in the target dir.
+- Navigate to LISTENER_ROOT and run `mvn clean install -Pproduction`. This will build your project and place a jar file in the target dir.
+- Navigate to PLANNER_ROOT and run `mvn clean install`. This will build your project and place a jar file in the target dir.
 
 To run the app and all related containers, navigate to PLANNER_HOME and first build the Docker images of all services:
 ```agsl
