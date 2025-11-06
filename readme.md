@@ -15,7 +15,7 @@ Q3: I want to hike in good weather in October 2026. Where should I go, where it'
 ```
 
 
-![RAG + Tool Calling](images/Planner.drawio.png)
+![RAG + Tool Calling](images/tool-calling.png)
 
 #### Components of the app
 This app consists of:
@@ -56,7 +56,7 @@ export LISTENER_ROOT=[/path/to/where/you/checkout/project]
 
 To run the app and all related containers, navigate to PLANNER_HOME and first build the Docker images of all services:
 ```agsl
-`docker compose -f ${PLANNER_ROOT}/docker-compose.yml build`
+docker compose -f ${PLANNER_ROOT}/docker-compose.yml build
 ```
 Next run all the apps:
 ```agsl
