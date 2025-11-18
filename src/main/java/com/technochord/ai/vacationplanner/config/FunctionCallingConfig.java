@@ -158,8 +158,6 @@ public class FunctionCallingConfig {
     public ChatClient openAiChatClient() {
         return ChatClient.builder(openAiChatModel)
                 .defaultAdvisors(List.of(toolConfirmationAdvisor()))
-                .defaultToolCallbacks(availableToolList(weatherService(), airfareService(), currencyExchangeService(), financialService(),
-                        recipeService(), bookingService(), spendingLogsService()))
                 .build();
     }
 
@@ -167,8 +165,6 @@ public class FunctionCallingConfig {
     public ChatClient anthropicChatClient() {
         return ChatClient.builder(anthropicChatModel)
                 .defaultAdvisors(List.of(toolConfirmationAdvisor()))
-                .defaultToolCallbacks(availableToolList(weatherService(), airfareService(), currencyExchangeService(), financialService(),
-                        recipeService(), bookingService(), spendingLogsService()))
                 .defaultOptions(AnthropicChatOptions.builder().maxTokens(anthropicChatProperties.getOptions().getMaxTokens())
                         .build())
                 .build();
@@ -186,6 +182,9 @@ public class FunctionCallingConfig {
     }
     @Bean
     public ConfirmableToolChatService confirmableToolChatService() {
-        return new ConfirmableToolChatService(openAiChatClient(), anthropicChatClient(), ragService(), ragProperties, openAiChatProperties, anthropicChatProperties );
+        return new ConfirmableToolChatService(openAiChatClient(), anthropicChatClient(), ragService(), ragProperties,
+                openAiChatProperties, anthropicChatProperties ,
+                availableToolList(weatherService(), airfareService(), currencyExchangeService(), financialService(),
+                        recipeService(), bookingService(), spendingLogsService()));
     }
 }

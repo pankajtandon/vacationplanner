@@ -11,10 +11,12 @@ import org.springframework.ai.chat.prompt.ChatOptions;
 import org.springframework.ai.model.anthropic.autoconfigure.AnthropicChatProperties;
 import org.springframework.ai.model.openai.autoconfigure.OpenAiChatProperties;
 import org.springframework.ai.openai.OpenAiChatOptions;
+import org.springframework.ai.tool.ToolCallback;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 @Log4j2
 public class ConfirmableToolChatService {
@@ -25,6 +27,7 @@ public class ConfirmableToolChatService {
     private RagProperties ragProperties;
     private OpenAiChatProperties openAiChatProperties;
     private AnthropicChatProperties anthropicChatProperties;
+    private List<ToolCallback> availableToolList;
 
     private String SYSTEM_MESSAGE = "Use all the tools at your disposal to answer all aspects of the question asked.";
 
@@ -34,13 +37,15 @@ public class ConfirmableToolChatService {
             RagService ragService,
             RagProperties ragProperties,
             OpenAiChatProperties openAiChatProperties,
-            AnthropicChatProperties anthropicChatProperties) {
+            AnthropicChatProperties anthropicChatProperties,
+            List<ToolCallback> availableToolList) {
         this.openAiChatClient = openAiChatClient;
         this.anthropicChatClient = anthropicChatClient;
         this.ragService = ragService;
         this.ragProperties = ragProperties;
         this.openAiChatProperties = openAiChatProperties;
         this.anthropicChatProperties = anthropicChatProperties;
+        this.availableToolList = availableToolList;
     }
 
     public PlannerChatResponse chat(String userMessage, int userSuppliedTopK, String modelName) throws  Exception {
@@ -49,14 +54,16 @@ public class ConfirmableToolChatService {
         ChatOptions runtimeChatOptions = null;
         Set<String> relevantToolNameList = this.ragService.getRagCandidateFunctionNameSet(userMessage,
                 userSuppliedTopK == 0 ? ragProperties.topK : userSuppliedTopK);
+        List<ToolCallback> filteredToolCallbacks = availableToolList.stream()
+                .filter(tc -> relevantToolNameList.contains(tc.getToolDefinition().name()))
+                .collect(Collectors.toList());
+        log.debug("List of filtered callbacks (after RAG analysis) are: " + filteredToolCallbacks.stream().map(tc -> tc.getToolDefinition().name()).collect(Collectors.toList()));
 
         if (determineModelProvider(modelName) == ModelProvider.OPEN_AI) {
             //GPT-5-* no longer supports configurable temp!
-            Double temp = (modelName.toLowerCase().startsWith("gpt-5") ? 1.0 : openAiChatProperties.getOptions().getTemperature());
-
+            Double temp = (modelName.toLowerCase().equals("gpt-5-nano") ? 1.0 : openAiChatProperties.getOptions().getTemperature());
             runtimeChatOptions = OpenAiChatOptions.builder().model(modelName).temperature(temp)
-                    .toolNames(relevantToolNameList.toArray(new String[0])).build();
-
+                    .toolCallbacks(filteredToolCallbacks).build();
             chatResponse =  openAiChatClient.prompt()
                     .user(userMessage)
                     .system(SYSTEM_MESSAGE)
@@ -64,10 +71,9 @@ public class ConfirmableToolChatService {
                     .call()
                     .chatResponse();
         } else if (determineModelProvider(modelName) == ModelProvider.ANTHROPIC) {
-
             runtimeChatOptions = AnthropicChatOptions.builder().model(modelName)
                     .temperature(anthropicChatProperties.getOptions().getTemperature())
-                    .toolNames(relevantToolNameList.toArray(new String[0])).build();
+                    .toolCallbacks(filteredToolCallbacks).build();
             chatResponse =  anthropicChatClient.prompt()
                     .user(userMessage)
                     .system(SYSTEM_MESSAGE)
