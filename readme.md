@@ -11,7 +11,9 @@ Q1. I live in Pittsburgh, PA and I love golf. In the fall of 2026, where should 
 
 Q2. I need to remain healthy by following a vegetarian diet and also remain under budget. What dishes can you recommend so that I follow the 90 30 50 diet rule and such that it is also affordable over a year? Note that 90/30/50 rule refer to grams of carbs/protein/fat per meal.
 
-Q3: I want to hike in good weather in October 2026. Where should I go, where it's pleasant, not too pricey, I can get vegetarian food and I can get a property to stay at (with a coffee maker, preferably)? I live in Pittsburgh, PA and would prefer places that have direct flights from here. 
+Q3: I want to hike in good weather in October 2026. Where should I go, where it's pleasant, not too pricey, I can get vegetarian food and I can get a property to stay at (with a coffee maker, preferably)? I live in Pittsburgh, PA and would prefer places that have direct flights from here.
+
+Q4. Based on my past spending habits, what are going to be my largest expenses in this quarter? 
 ```
 
 
@@ -63,7 +65,7 @@ Next run all the apps:
 docker compose -f ${PLANNER_ROOT}/docker-compose.yml up
 ```
 
-or, if you are in $PLANNER_ROOT, simple run
+or, if you are in $PLANNER_ROOT, simply run
 ```arm
 docker compose up
 ```

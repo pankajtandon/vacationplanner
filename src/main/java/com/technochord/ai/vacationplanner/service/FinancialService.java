@@ -1,6 +1,7 @@
 package com.technochord.ai.vacationplanner.service;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
+import com.fasterxml.jackson.annotation.JsonPropertyDescription;
 import com.technochord.ai.vacationplanner.config.RagCandidate;
 import lombok.extern.log4j.Log4j2;
 import org.springframework.ai.tool.annotation.Tool;
@@ -17,7 +18,8 @@ public class FinancialService  {
     {
     }
 
-    public record Response(double bankBalance, double monthlyIncome)
+    public record Response(@JsonPropertyDescription("The current bank balance expressed in USD.") double bankBalance,
+                           @JsonPropertyDescription("The monthly income expressed in USD.") double monthlyIncome)
     {
     }
 
@@ -30,5 +32,4 @@ public class FinancialService  {
         log.info("FinancialService response: " + cannedResponseForNow);
         return cannedResponseForNow;
     }
-
 }

@@ -16,20 +16,19 @@ spring:
         options:
           # model: gpt-4o # meh
           # model: gpt-4o-mini - no significant improvement over gpt-4-0125-preview
-          #model: gpt-4o-2024-11-20 # - Best performance Jul 2025
+          # model: gpt-4o-2024-11-20 # - Best performance Jul 2025
           model: gpt-5-nano #
           # model: o1-preview - does not support FC
-          temperature: 1.0
+          temperature: 0.3
       embedding:
         enabled: true
-# See comment on AnthropicConfig class
-#    anthropic:
-#      api-key: ${ANTHROPIC_API_KEY}
-#      chat:
-#        options:
-#          model: claude-haiku-4-5
-#          temperature: 0.7
-#          max-tokens: 4000
+    anthropic:
+      api-key: ${ANTHROPIC_API_KEY}
+      chat:
+        options:
+          model: claude-haiku-4-5
+          temperature: 0.3
+          max-tokens: 4000
     vectorstore:
       elasticsearch:
         initialize-schema: true # This creates the index for the embeddings.
@@ -39,7 +38,6 @@ spring:
         distance-type: COSINE_DISTANCE
         dimensions: 1536
         max-document-batch-size: 10000 # Optional: Maximum number of documents per batch
-
     mcp:
       client:
         enabled: true
