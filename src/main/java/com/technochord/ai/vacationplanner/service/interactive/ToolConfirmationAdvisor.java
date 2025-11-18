@@ -1,6 +1,7 @@
 package com.technochord.ai.vacationplanner.service.interactive;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.technochord.ai.vacationplanner.service.RagService;
 import lombok.extern.log4j.Log4j2;
 import org.springframework.ai.chat.client.ChatClientRequest;
 import org.springframework.ai.chat.client.ChatClientResponse;
@@ -25,12 +26,12 @@ import java.util.stream.Stream;
 public class ToolConfirmationAdvisor implements CallAdvisor {
 
     private final ConversationStateManager stateManager;
-    private final List<ToolCallback> availableToolList;
+    private final RagService ragService;
     private final int order = 0; // High priority
 
-    public ToolConfirmationAdvisor(ConversationStateManager stateManager, List<ToolCallback> availableToolList) {
+    public ToolConfirmationAdvisor(ConversationStateManager stateManager, RagService ragService) {
         this.stateManager = stateManager;
-        this.availableToolList = availableToolList;
+        this.ragService = ragService;
     }
 
     @Override
@@ -161,7 +162,7 @@ public class ToolConfirmationAdvisor implements CallAdvisor {
     }
 
     private String executeToolDirectly(AssistantMessage.ToolCall toolCall) {
-        ToolCallback callback = availableToolList.stream().filter(tc -> tc.getToolDefinition()
+        ToolCallback callback = ragService.getAvailableToolCallbackList().stream().filter(tc -> tc.getToolDefinition()
                 .name().equals(toolCall.name())).findFirst().orElse(null);
         if (callback != null) {
             try {

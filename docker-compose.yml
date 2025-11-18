@@ -39,6 +39,7 @@ services:
       - spring.datasource.url=jdbc:postgresql://db:5432/postgres
       - spring.ai.openai.apiKey=${OPENAI_API_KEY}
       - spring.ai.anthropic.apiKey=${ANTHROPIC_API_KEY}
+      - spring.ai.deepseek.apiKey=${DEEPSEEK_API_KEY}
       - weather.visualcrossing.apiKey=${VISUALCROSSING_API_KEY}
       - flight.amadeus.client-id=${AMADEUS_CLIENT_ID}
       - flight.amadeus.client-secret=${AMADEUS_CLIENT_SECRET}

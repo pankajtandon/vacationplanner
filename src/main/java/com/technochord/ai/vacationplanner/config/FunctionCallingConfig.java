@@ -9,16 +9,11 @@ import com.technochord.ai.vacationplanner.service.interactive.ConfirmableToolCha
 import com.technochord.ai.vacationplanner.service.interactive.ConversationStateManager;
 import com.technochord.ai.vacationplanner.service.interactive.ToolConfirmationAdvisor;
 import lombok.extern.log4j.Log4j2;
-import org.springframework.ai.anthropic.AnthropicChatModel;
-import org.springframework.ai.anthropic.AnthropicChatOptions;
 import org.springframework.ai.chat.client.ChatClient;
 import org.springframework.ai.chat.client.advisor.PromptChatMemoryAdvisor;
 import org.springframework.ai.chat.memory.ChatMemory;
 import org.springframework.ai.chat.memory.MessageWindowChatMemory;
 import org.springframework.ai.mcp.SyncMcpToolCallbackProvider;
-import org.springframework.ai.model.anthropic.autoconfigure.AnthropicChatProperties;
-import org.springframework.ai.model.openai.autoconfigure.OpenAiChatProperties;
-import org.springframework.ai.openai.OpenAiChatModel;
 import org.springframework.ai.support.ToolCallbacks;
 import org.springframework.ai.tool.ToolCallback;
 import org.springframework.ai.vectorstore.VectorStore;
@@ -36,16 +31,14 @@ import java.util.List;
 public class FunctionCallingConfig {
 
     @Autowired
-    private OpenAiChatProperties openAiChatProperties;
+    private ChatClient openAiChatClient;
 
     @Autowired
-    private AnthropicChatProperties anthropicChatProperties;
+    private ChatClient anthropicChatClient;
 
     @Autowired
-    private OpenAiChatModel openAiChatModel;
+    private ChatClient deepSeekChatClient;
 
-    @Autowired
-    private AnthropicChatModel anthropicChatModel;
 
     @Autowired
     private RestTemplate restTemplate;
@@ -103,37 +96,10 @@ public class FunctionCallingConfig {
         return new SpendingLogsService();
     }
 
-
-
-    @Bean
-    public List<ToolCallback> availableToolList(final WeatherService weatherService, final AirfareService airfareService,
-                                         final CurrencyExchangeService currencyExchangeService,
-                                         final FinancialService financialService,
-                                         final RecipeService recipeService,
-                                                final BookingService bookingService, SpendingLogsService spendingLogsService) {
-        List<ToolCallback> toolCallbackList = new ArrayList<>();
-
-        List<ToolCallback> methodToolCallbackList = List.of(ToolCallbacks.from(weatherService, airfareService, currencyExchangeService,
-                financialService, recipeService, bookingService, spendingLogsService));
-
-        //First get the method functions/tools
-        if (methodToolCallbackList != null) {
-            toolCallbackList.addAll(methodToolCallbackList);
-        }
-
-        //Next get the MCP tools...
-        ToolCallback[] mcpToolCallbackArray =  syncMcpToolCallbackProvider.getToolCallbacks();
-        if (mcpToolCallbackArray != null) {
-            toolCallbackList.addAll(Arrays.stream(mcpToolCallbackArray).toList());
-        }
-        log.info("Found a total of {} tools", toolCallbackList.size());
-        return toolCallbackList;
-    }
-
     @Bean
     public RagService ragService() {
         return new RagService(ragCandidateServiceContext(), vectorStore,
-                availableToolList(weatherService(), airfareService(), currencyExchangeService(), financialService(), recipeService(),
+                allAvailableToolsList(weatherService(), airfareService(), currencyExchangeService(), financialService(), recipeService(),
                         bookingService(), spendingLogsService()),
                 ragProperties);
     }
@@ -155,36 +121,45 @@ public class FunctionCallingConfig {
     }
 
     @Bean
-    public ChatClient openAiChatClient() {
-        return ChatClient.builder(openAiChatModel)
-                .defaultAdvisors(List.of(toolConfirmationAdvisor()))
-                .build();
-    }
-
-    @Bean
-    public ChatClient anthropicChatClient() {
-        return ChatClient.builder(anthropicChatModel)
-                .defaultAdvisors(List.of(toolConfirmationAdvisor()))
-                .defaultOptions(AnthropicChatOptions.builder().maxTokens(anthropicChatProperties.getOptions().getMaxTokens())
-                        .build())
-                .build();
-    }
-
-    @Bean
     public ConversationStateManager conversationStateManager() {
         return new ConversationStateManager();
     }
+
+
     @Bean
     public ToolConfirmationAdvisor toolConfirmationAdvisor() {
-        return new ToolConfirmationAdvisor(conversationStateManager(),
-                availableToolList(weatherService(), airfareService(), currencyExchangeService(), financialService(),
-                        recipeService(), bookingService(), spendingLogsService()));
+        return new ToolConfirmationAdvisor(conversationStateManager(),ragService());
     }
     @Bean
     public ConfirmableToolChatService confirmableToolChatService() {
-        return new ConfirmableToolChatService(openAiChatClient(), anthropicChatClient(), ragService(), ragProperties,
-                openAiChatProperties, anthropicChatProperties ,
-                availableToolList(weatherService(), airfareService(), currencyExchangeService(), financialService(),
-                        recipeService(), bookingService(), spendingLogsService()));
+        return new ConfirmableToolChatService(openAiChatClient, anthropicChatClient, deepSeekChatClient, ragService(), ragProperties);
+    }
+
+
+
+    //----- P R I V A T E ---
+
+    private List<ToolCallback> allAvailableToolsList(final WeatherService weatherService, final AirfareService airfareService,
+                                                 final CurrencyExchangeService currencyExchangeService,
+                                                 final FinancialService financialService,
+                                                 final RecipeService recipeService,
+                                                 final BookingService bookingService, SpendingLogsService spendingLogsService) {
+        List<ToolCallback> toolCallbackList = new ArrayList<>();
+
+        List<ToolCallback> methodToolCallbackList = List.of(ToolCallbacks.from(weatherService, airfareService, currencyExchangeService,
+                financialService, recipeService, bookingService, spendingLogsService));
+
+        //First get the method functions/tools
+        if (methodToolCallbackList != null) {
+            toolCallbackList.addAll(methodToolCallbackList);
+        }
+
+        //Next get the MCP tools...
+        ToolCallback[] mcpToolCallbackArray =  syncMcpToolCallbackProvider.getToolCallbacks();
+        if (mcpToolCallbackArray != null) {
+            toolCallbackList.addAll(Arrays.stream(mcpToolCallbackArray).toList());
+        }
+        log.info("Found a total of {} tools", toolCallbackList.size());
+        return toolCallbackList;
     }
 }

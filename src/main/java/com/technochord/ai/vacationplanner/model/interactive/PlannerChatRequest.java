@@ -7,4 +7,5 @@ public class PlannerChatRequest {
     private String message;
     private int userSuppliedTopK;
     private String modelName;
+    private String temperature;
 }

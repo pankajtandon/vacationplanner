@@ -8,8 +8,7 @@ import org.springframework.ai.anthropic.AnthropicChatOptions;
 import org.springframework.ai.chat.client.ChatClient;
 import org.springframework.ai.chat.model.ChatResponse;
 import org.springframework.ai.chat.prompt.ChatOptions;
-import org.springframework.ai.model.anthropic.autoconfigure.AnthropicChatProperties;
-import org.springframework.ai.model.openai.autoconfigure.OpenAiChatProperties;
+import org.springframework.ai.deepseek.DeepSeekChatOptions;
 import org.springframework.ai.openai.OpenAiChatOptions;
 import org.springframework.ai.tool.ToolCallback;
 
@@ -23,45 +22,39 @@ public class ConfirmableToolChatService {
 
     private final ChatClient openAiChatClient;
     private final ChatClient anthropicChatClient;
+    private final ChatClient deepSeekChatClient;
     private final RagService ragService;
     private RagProperties ragProperties;
-    private OpenAiChatProperties openAiChatProperties;
-    private AnthropicChatProperties anthropicChatProperties;
-    private List<ToolCallback> availableToolList;
 
     private String SYSTEM_MESSAGE = "Use all the tools at your disposal to answer all aspects of the question asked.";
 
     public ConfirmableToolChatService(
             ChatClient openAiChatClient,
             ChatClient anthropicChatClient,
+            ChatClient deepSeekChatClient,
             RagService ragService,
-            RagProperties ragProperties,
-            OpenAiChatProperties openAiChatProperties,
-            AnthropicChatProperties anthropicChatProperties,
-            List<ToolCallback> availableToolList) {
+            RagProperties ragProperties) {
         this.openAiChatClient = openAiChatClient;
         this.anthropicChatClient = anthropicChatClient;
         this.ragService = ragService;
         this.ragProperties = ragProperties;
-        this.openAiChatProperties = openAiChatProperties;
-        this.anthropicChatProperties = anthropicChatProperties;
-        this.availableToolList = availableToolList;
+        this.deepSeekChatClient = deepSeekChatClient;
     }
 
-    public PlannerChatResponse chat(String userMessage, int userSuppliedTopK, String modelName) throws  Exception {
-        log.info("Model being used is " + modelName);
+    public PlannerChatResponse chat(String userMessage, int userSuppliedTopK, String modelName, String temperature) throws  Exception {
+
         ChatResponse chatResponse = null;
         ChatOptions runtimeChatOptions = null;
-        Set<String> relevantToolNameList = this.ragService.getRagCandidateFunctionNameSet(userMessage,
+        List<ToolCallback> filteredToolCallbacks = this.ragService.getRagCandidateToolCallbackList(userMessage,
                 userSuppliedTopK == 0 ? ragProperties.topK : userSuppliedTopK);
-        List<ToolCallback> filteredToolCallbacks = availableToolList.stream()
-                .filter(tc -> relevantToolNameList.contains(tc.getToolDefinition().name()))
-                .collect(Collectors.toList());
-        log.debug("List of filtered callbacks (after RAG analysis) are: " + filteredToolCallbacks.stream().map(tc -> tc.getToolDefinition().name()).collect(Collectors.toList()));
-
+        List<String> filteredToolNameList = filteredToolCallbacks.stream().map(tc -> tc.getToolDefinition().name()).collect(Collectors.toList());
+        log.debug("List of filtered callback names (after RAG analysis) are: " + filteredToolNameList);
+        log.info("Model being used is " + modelName);
         if (determineModelProvider(modelName) == ModelProvider.OPEN_AI) {
             //GPT-5-* no longer supports configurable temp!
-            Double temp = (modelName.toLowerCase().equals("gpt-5-nano") ? 1.0 : openAiChatProperties.getOptions().getTemperature());
+            Double temp = (modelName.toLowerCase().equals("gpt-5-nano") ? 1.0 : Double.parseDouble(temperature));
+
+            log.info("Model being used is " + modelName + ", temp: " + temp.toString());
             runtimeChatOptions = OpenAiChatOptions.builder().model(modelName).temperature(temp)
                     .toolCallbacks(filteredToolCallbacks).build();
             chatResponse =  openAiChatClient.prompt()
@@ -72,9 +65,19 @@ public class ConfirmableToolChatService {
                     .chatResponse();
         } else if (determineModelProvider(modelName) == ModelProvider.ANTHROPIC) {
             runtimeChatOptions = AnthropicChatOptions.builder().model(modelName)
-                    .temperature(anthropicChatProperties.getOptions().getTemperature())
+                    .temperature(Double.parseDouble(temperature))
                     .toolCallbacks(filteredToolCallbacks).build();
-            chatResponse =  anthropicChatClient.prompt()
+            chatResponse = anthropicChatClient.prompt()
+                    .user(userMessage)
+                    .system(SYSTEM_MESSAGE)
+                    .options(runtimeChatOptions)
+                    .call()
+                    .chatResponse();
+        } else if (determineModelProvider(modelName) == ModelProvider.DEEPSEEK) {
+            runtimeChatOptions = DeepSeekChatOptions.builder().model(modelName)
+                    .temperature(Double.parseDouble(temperature))
+                    .toolCallbacks(filteredToolCallbacks).build();
+            chatResponse = deepSeekChatClient.prompt()
                     .user(userMessage)
                     .system(SYSTEM_MESSAGE)
                     .options(runtimeChatOptions)
@@ -89,7 +92,8 @@ public class ConfirmableToolChatService {
                 && chatResponse.getResults().size() > 0
                 && chatResponse.getResults().get(0).getOutput() != null) {
             plannerChatResponse = PlannerChatResponse.buildResponse(chatResponse.getResults().get(0).getOutput().getText(),
-                    chatResponse.getResults().get(0).getOutput().getToolCalls(), new ArrayList<>(relevantToolNameList));
+                    chatResponse.getResults().get(0).getOutput().getToolCalls(),
+                    new ArrayList<>(filteredToolNameList));
         }
 
         log.debug("PlannerChatResponse in service " + plannerChatResponse);
@@ -119,6 +123,19 @@ public class ConfirmableToolChatService {
                     .options(ChatOptions.builder().model(modelName).build())
                     .call()
                     .content();
+        } else if (determineModelProvider(modelName) == ModelProvider.DEEPSEEK) {
+            return deepSeekChatClient.prompt()
+                    .user("User response")
+                    .system(SYSTEM_MESSAGE)
+                    .advisors(advisorSpec -> advisorSpec
+                            .param("conversationId", conversationId)
+                            .param("approved", approved)
+                            .param("feedback", (feedback == null ? "none" : feedback)))
+                    .options(ChatOptions.builder().model(modelName).build())
+                    .call()
+                    .content();
+
+
         } else {
             throw new IllegalAccessException(String.format("ModelName %s is not supported (yet!! ;) )", modelName));
         }
@@ -130,12 +147,14 @@ public class ConfirmableToolChatService {
             return ModelProvider.OPEN_AI;
         } else if (modelName.toLowerCase().startsWith("claude")) {
             return ModelProvider.ANTHROPIC;
+        } else if (modelName.toLowerCase().startsWith("deepseek")) {
+            return ModelProvider.DEEPSEEK;
         } else {
             throw new IllegalAccessException(String.format("ModelName %s is not supported (yet!! ;) )", modelName));
         }
     }
 
      enum ModelProvider {
-        OPEN_AI, ANTHROPIC;
+        OPEN_AI, ANTHROPIC, DEEPSEEK;
     }
 }

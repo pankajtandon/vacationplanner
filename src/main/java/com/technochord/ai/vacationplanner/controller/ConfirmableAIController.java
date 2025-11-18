@@ -24,7 +24,7 @@ public class ConfirmableAIController {
     @PostMapping("/chat")
     public ResponseEntity<PlannerChatResponse> chat(@RequestBody PlannerChatRequest request) {
         try {
-            PlannerChatResponse chatResponse = chatService.chat(request.getMessage(), request.getUserSuppliedTopK(), request.getModelName());
+            PlannerChatResponse chatResponse = chatService.chat(request.getMessage(), request.getUserSuppliedTopK(), request.getModelName(), request.getTemperature());
             return ResponseEntity.ok(chatResponse);
 
         } catch (Exception e) {
