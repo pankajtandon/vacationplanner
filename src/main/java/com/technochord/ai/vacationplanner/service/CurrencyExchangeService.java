@@ -1,6 +1,7 @@
 package com.technochord.ai.vacationplanner.service;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
+import com.fasterxml.jackson.annotation.JsonPropertyDescription;
 import com.technochord.ai.vacationplanner.config.RagCandidate;
 import com.technochord.ai.vacationplanner.config.properties.CurrencyExchangeProperties;
 import com.technochord.ai.vacationplanner.model.ExchangeRates;
@@ -43,7 +44,8 @@ public class CurrencyExchangeService {
     {
     }
 
-    public record Response(double amount, AirfareService.Currency currencyOut)
+    public record Response(@JsonPropertyDescription("The currency amount in the units of the 'currencyOut' response parameter.") double amount,
+                           @JsonPropertyDescription("The currency in which the 'amount' parameter is expressed.") AirfareService.Currency currencyOut)
     {
     }
 

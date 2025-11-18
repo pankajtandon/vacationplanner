@@ -1,6 +1,7 @@
 package com.technochord.ai.vacationplanner.service;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
+import com.fasterxml.jackson.annotation.JsonPropertyDescription;
 import com.technochord.ai.vacationplanner.config.RagCandidate;
 import com.technochord.ai.vacationplanner.config.properties.FlightProperties;
 import com.technochord.ai.vacationplanner.model.Airports;
@@ -84,7 +85,8 @@ public class AirfareService {
     {
     }
 
-    public record Response(double airfare, Currency currency)
+    public record Response(@JsonPropertyDescription("The airfare for the trip.") double airfare,
+                           @JsonPropertyDescription("The currency in which the airfare is represented.")  Currency currency)
     {
     }
 

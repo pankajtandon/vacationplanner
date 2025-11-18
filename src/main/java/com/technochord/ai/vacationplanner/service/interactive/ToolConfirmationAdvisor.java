@@ -18,6 +18,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 @Log4j2
 public class ToolConfirmationAdvisor implements CallAdvisor {
@@ -70,11 +72,14 @@ public class ToolConfirmationAdvisor implements CallAdvisor {
 
     private boolean hasToolCalls(ChatClientResponse response) {
         ChatResponse chatResponse = response.chatResponse();
-        if (chatResponse != null && chatResponse.getResult() != null) {
-            AssistantMessage message = chatResponse.getResult().getOutput();
-            return message.getToolCalls() != null && !message.getToolCalls().isEmpty();
+        boolean hasToolCallsInAnyGeneration = false;
+        if (chatResponse != null) {
+            hasToolCallsInAnyGeneration = chatResponse.getResults().stream()
+                    .anyMatch(gen -> gen.getOutput().getToolCalls() != null
+                            && !gen.getOutput().getToolCalls().isEmpty());
         }
-        return false;
+        log.debug("ChatResponse hasTools: " + hasToolCallsInAnyGeneration);
+        return hasToolCallsInAnyGeneration;
     }
 
     private ChatClientResponse interceptToolCallsForConfirmation(
@@ -82,10 +87,7 @@ public class ToolConfirmationAdvisor implements CallAdvisor {
             ChatClientResponse response) {
 
         // Extract tool calls from response
-        List<AssistantMessage.ToolCall> toolCalls = response.chatResponse()
-                .getResult()
-                .getOutput()
-                .getToolCalls();
+        List<AssistantMessage.ToolCall> toolCalls = collectAllToolCalls(response.chatResponse());
 
         // Create conversation state for confirmation flow
         String conversationId = UUID.randomUUID().toString();
@@ -104,6 +106,14 @@ public class ToolConfirmationAdvisor implements CallAdvisor {
         ChatResponse confirmationResponse = createConfirmationResponse(state);
 
         return new ChatClientResponse(confirmationResponse, response.context());
+    }
+
+    public List<AssistantMessage.ToolCall> collectAllToolCalls(ChatResponse chatResponse) {
+        return chatResponse.getResults().stream()
+                .flatMap(generation -> generation.getOutput().getToolCalls() == null
+                        ? Stream.empty()
+                        : generation.getOutput().getToolCalls().stream())
+                .collect(Collectors.toList());
     }
 
     private ChatClientResponse handlePendingConfirmation(

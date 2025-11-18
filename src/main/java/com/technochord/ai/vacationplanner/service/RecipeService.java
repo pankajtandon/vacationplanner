@@ -24,7 +24,11 @@ public class RecipeService {
     {
     }
 
-    public record Response(double proteinPercent, double carbPercent, double fatPercent, double calories, double cost)
+    public record Response(@JsonPropertyDescription("The percentage of protein.") double proteinPercent,
+                           @JsonPropertyDescription("The percentage of carbs.") double carbPercent,
+                           @JsonPropertyDescription("The percentage of fat.") double fatPercent,
+                           @JsonPropertyDescription("The total calories in a single serving of this dish.") double calories,
+                           @JsonPropertyDescription("The cost of this dish.") double cost)
     {
     }
 

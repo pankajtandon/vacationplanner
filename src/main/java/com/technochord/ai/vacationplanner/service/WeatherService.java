@@ -2,6 +2,7 @@ package com.technochord.ai.vacationplanner.service;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.annotation.JsonPropertyDescription;
 import com.technochord.ai.vacationplanner.config.RagCandidate;
 import com.technochord.ai.vacationplanner.config.properties.WeatherProperties;
 import com.technochord.ai.vacationplanner.model.MonthlyWeather;
@@ -69,7 +70,10 @@ public class WeatherService {
     /**
      * Weather Function response.
      */
-    public record Response(double temp, double temp_min, double temp_max, Unit unit) {
+    public record Response(@JsonPropertyDescription("Temperature expressed in units represented by the response parameter 'unit'.") double temp,
+                           @JsonPropertyDescription("Minimum temperature at this location in the specified time period.") double temp_min,
+                           @JsonPropertyDescription("Maximum temperature at this location in the specified time period.") double temp_max,
+                           @JsonPropertyDescription("The temerature units in which the temperature is expressed (C|F).") Unit unit) {
     }
 
     @Tool(name = "weatherService", description = "Gets the average weather for a location and month and year")
