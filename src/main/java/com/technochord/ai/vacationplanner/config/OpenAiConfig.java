@@ -1,6 +1,8 @@
 package com.technochord.ai.vacationplanner.config;
 
+import com.technochord.ai.vacationplanner.service.interactive.ToolConfirmationAdvisor;
 import io.micrometer.observation.ObservationRegistry;
+import org.springframework.ai.chat.client.ChatClient;
 import org.springframework.ai.model.openai.autoconfigure.OpenAiChatProperties;
 import org.springframework.ai.model.openai.autoconfigure.OpenAiConnectionProperties;
 import org.springframework.ai.model.tool.ToolCallingManager;
@@ -13,23 +15,37 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Lazy;
 
+import java.util.List;
+
 @Configuration
 public class OpenAiConfig {
 
     @Autowired
     private ObservationRegistry observationRegistry;
 
+    @Autowired
+    private OpenAiChatProperties openAiChatProperties;
+
+    @Autowired
+    private OpenAiConnectionProperties openAiConnectionProperties;
+
     @Lazy
     @Autowired
     private ToolCallingManager toolCallingManager;
 
+    @Lazy
     @Autowired
-    private OpenAiChatProperties openAiChatProperties;
-    @Autowired
-    private OpenAiConnectionProperties openAiConnectionProperties;
+    private ToolConfirmationAdvisor toolConfirmationAdvisor;
+
 
     @Bean
-    public OpenAiChatModel chatModel() {
+    public ChatClient openAiChatClient() {
+        return ChatClient.builder(openAiChatModel())
+                .defaultAdvisors(List.of(toolConfirmationAdvisor))
+                .build();
+    }
+
+    private OpenAiChatModel openAiChatModel() {
         OpenAiApi openAiApi = OpenAiApi.builder()
                 .apiKey(openAiConnectionProperties.getApiKey())
                 .build();

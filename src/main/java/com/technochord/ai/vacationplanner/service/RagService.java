@@ -37,7 +37,18 @@ public class RagService {
         this.ragProperties = ragProperties;
     }
 
-    public Set<String> getRagCandidateFunctionNameSet(final String query, final Integer userSuppliedTopK) {
+    public List<ToolCallback> getRagCandidateToolCallbackList(final String query, final Integer userSuppliedTopK) {
+        Set<String> ragCandidateNameList = this.getRagCandidateFunctionNameSet(query, userSuppliedTopK);
+        return this.availableToolCallbackList.stream()
+                .filter(tc -> ragCandidateNameList.contains(tc.getToolDefinition().name()))
+                .collect(Collectors.toList());
+    }
+
+    public List<ToolCallback> getAvailableToolCallbackList() {
+        return this.availableToolCallbackList;
+    }
+
+    private Set<String> getRagCandidateFunctionNameSet(final String query, final Integer userSuppliedTopK) {
         List<ToolCallback> compositeToolCallbackList = new ArrayList<>();
 
         //First get the RagCandidate Tools from the all the available tools
@@ -119,7 +130,7 @@ public class RagService {
             List<String> nameList = retrievedTopK.stream().map(d -> (String) d.getMetadata().get("name")).collect(Collectors.toList());
 
             log.info("There were {} functions found that were relevant to the passed in query, with a distance range from {} to {}", nameList.size(), min, max);
-            log.debug("Functions metadata being sent to LLM in descending order of relevance: " + nameList.toString());
+            log.debug("Functions metadata being sent to LLM in descending order of relevance: " + nameList);
             return new HashSet<>(nameList);
         }
     }

@@ -29,6 +29,12 @@ spring:
           model: claude-haiku-4-5
           temperature: 0.3
           max-tokens: 4000
+    deepseek:
+      api-key: ${DEEPSEEK_API_KEY}
+      chat:
+        options:
+          model: deepseek-chat
+          temperature: 0.3
     vectorstore:
       elasticsearch:
         initialize-schema: true # This creates the index for the embeddings.
