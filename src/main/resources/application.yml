@@ -17,9 +17,9 @@ spring:
           # model: gpt-4o # meh
           # model: gpt-4o-mini - no significant improvement over gpt-4-0125-preview
           # model: gpt-4o-2024-11-20 # - Best performance Jul 2025
-          model: gpt-5-nano #
+          model: gpt-5-mini #
           # model: o1-preview - does not support FC
-          temperature: 0.3
+          temperature: 1.0
       embedding:
         enabled: true
     anthropic:

@@ -4,6 +4,7 @@ Planner
 This project demonstrates how we can use Spring AI's implementation of the `Tool Calling` feature along with `Retrieval Augumented Generation` (RAG) so that we can not only interact 
 with pre-trained models in a secure manner, we can also minimize the 
 tokens of function metadata sent to the LLMs. It also demonstrates how to interact with a standalone MCP server.
+Using the Advisor API, this project demonstrates the 'human-in-the-loop' pattern by making ToolCalls interactive (user can decide if that invocation of the tool should be done or not). 
 
 These are sample questions that this app can answer, by combining Tool Calling (local and MCP) and RAG:
 ```
@@ -24,7 +25,7 @@ This app consists of:
 - **Planner** - This is a Spring Boot app that runs on port and exposes an endpoint that interacts with LLMs for inference and embeddings using Spring AI integration. It also contains services (@Service), some of which define metadata and can be exposed as Tools for the LLM to invoke when appropriate. (https://github.com/pankajtandon/vacationplanner) This runs in a Docker container.
 - **Airbnb MCP server** - This is a Spring Boot app that implements an MCP server and exposes a service via the MCP protocol. (https://github.com/pankajtandon/airbnb-mcp-server). This runs in a Docker container.
 - **A Postgres Vector db** - OOB image used to store embeddings of the query and Tool metadata during the RAG phase. This runs in Docker.
-- **Good Listener UI** - This is a Vaadin frontend that accepts queries and displays responses. (https://github.com/pankajtandon/airbnb-mcp-server) Also runs in Docker.
+- **Good Listener UI** - This is a Vaadin frontend that accepts queries, displays responses and seeks user confirmation for tool executions. (https://github.com/pankajtandon/airbnb-mcp-server) Also runs in Docker.
 
 These 4 components are orchestrated using a docker-compose file (https://github.com/pankajtandon/vacationplanner/blob/main/docker-compose.yml).
 
@@ -34,6 +35,8 @@ Create the following environment variables in your .zshrc/bashrc:
 
 ```
 export OPENAI_API_KEY=[api key (Create at https://platform.openai.com/api-keys)]
+export ANTHROPIC_API_KEY=[api key (Create at https://console.anthropic.com/settings/keys)]
+export DEEPSEEK_API_KEY=[api key (Create at https://platform.deepseek.com/api_keys)]
 export VISUALCROSSING_API_KEY=[api key (Create at https://www.visualcrossing.com/account)]
 export AMADEUS_CLIENT_ID=[api client Id (Create at https://www.accounts.amadeus.com/)]
 export AMADEUS_CLIENT_SECRET=[api client secret (Create at https://www.accounts.amadeus.com/)]

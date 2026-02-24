@@ -12,6 +12,8 @@
         <AppenderRef ref="Console" />
     </Root>
     <Logger name="com.technochord" level="DEBUG"></Logger>
+    <Logger name="org.springframework.web.client" level="DEBUG"></Logger>
+    <Logger name="org.apache.http.wire" level="DEBUG" additivity="false"></Logger>
     <Logger name="org.springframework.ai" level="DEBUG"></Logger>
     <Logger name="org.springframework.ai.chat.evaluation" level="TRACE"></Logger>
     <Logger name="org.springframework.ai.tool.resolution.StaticToolCallbackResolver" level="INFO"></Logger>

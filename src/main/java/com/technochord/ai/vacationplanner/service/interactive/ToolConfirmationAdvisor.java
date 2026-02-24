@@ -197,7 +197,13 @@ public class ToolConfirmationAdvisor implements CallAdvisor {
                 state.getConversationId()
         );
 
-        AssistantMessage message = new AssistantMessage(confirmationMessage, state.getOriginalResponse().context(), state.getToolCalls());
+        AssistantMessage message =
+                AssistantMessage.builder()
+                        .content(confirmationMessage)
+                        .toolCalls(state.getToolCalls())
+                        .properties(state.getOriginalResponse().context())
+                        .build();
+
         Generation generation = new Generation(message);
         ChatResponse response = new ChatResponse(List.of(generation));
         log.debug("Confirmation response from advisor: " + response);

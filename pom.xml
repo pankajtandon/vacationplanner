@@ -15,7 +15,7 @@
 	<description>Demo project for Spring AI - Tool Calling feature</description>
 	<properties>
 		<java.version>21</java.version>
-		<spring.ai.version>1.0.3</spring.ai.version>
+		<spring.ai.version>1.1.2</spring.ai.version>
 		<lombok.version>1.18.30</lombok.version>
 	</properties>
 	<repositories>
@@ -45,7 +45,7 @@
 			<dependency>
 				<groupId>org.springframework.ai</groupId>
 				<artifactId>spring-ai-bom</artifactId>
-				<version>1.0.3</version>
+				<version>${spring.ai.version}</version>
 				<type>pom</type>
 				<scope>import</scope>
 			</dependency>
